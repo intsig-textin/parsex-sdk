@@ -26,9 +26,9 @@ ITextInParserEngine* engine = ITextInParserEngine::createAndStartTextInParserEng
 engine->parseFile(filePath.c_str()); // filePath为需要解析的json文件路径
 int pageSize = 0;
 engine->getPageSize(&pageSize)
-for (int page_i = 0; i < pageSize; ++page_i) {
+for (int page_i = 0; page_i < pageSize; ++page_i) {
   int tableSize = 0;
-  engine->getPageTablesSize(i, &tableSize);
+  engine->getPageTablesSize(page_i, &tableSize);
   std::vector<Table> tables(tableSize);
   engine->findTables(page_i, tables.data(), tableSize);
   for (const auto& table : tables) {
