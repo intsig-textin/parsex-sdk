@@ -10,11 +10,13 @@
 
 ## 编译运行
 - 环境准备: gcc/g++ 8.1及以上
-- sample编译：到samples/cpp目录下，直接运行build.sh即可编译出测试程序
-- sample运行会遍历resource的json结果，sample会处理这些json结果得到输出在output/log.txt中
+- sample编译：到`samples/cpp`目录下，直接运行`./build.sh`即可编译出测试程序
+- sample运行会遍历`resource/`的json文件，sample会处理这些json文件，结果都输出在`output/log.txt`中
+- 每轮执行都会创建新的`output/log.txt`
 
 ## 运行样例
-- 项目clone下来之后，可以进入samples/cpp目录，运行./test_program在output/log.txt中即可看到samples/resource内的演示表格输出
+- 项目clone下来之后，可以进入`samples/cpp`目录，运行`./test_program`
+- 在`output/log.txt`中即可看到`samples/resource`内的演示表格输出
 
 ## 使用方式
 
@@ -50,10 +52,12 @@ delete engine;
 - `findTables` 获取具体Page的表格
 - `getDocument` 获取整个PDF数据的结构体
 
+### SDK API返回值说明
+
 ## Sample代码框架
 ### 说明
-- base目录包含对应的工具函数文件
-- cpp目录包含演示的main函数以及可直接运行的Makefile与build.sh编译脚本
-- file目录包含演示用的pdf文件
-- resource目录包含file文件中通过rest api返回的json结果（为了方便演示，直接展示处理resource目录里json）
+- `samples/base`目录包含对应的工具函数文件
+- `samples/cpp`目录包含演示的main函数以及可直接运行的`Makefile`与`build.sh`编译脚本
+- `samples/file`目录包含演示用的pdf文件
+- `samples/resource`目录包含file文件中通过TEXTIN RESTAPI返回的json结果并保存成了json文件（为了方便演示，直接展示处理`samples/resource`目录里json）
 - output目录包含输出的结果文件log.txt
