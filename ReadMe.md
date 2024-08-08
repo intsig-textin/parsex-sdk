@@ -12,10 +12,9 @@
 - 环境准备: gcc/g++ 8.1及以上
 - sample编译：到samples/cpp目录下，直接运行build.sh即可编译出测试程序
 - sample运行会遍历resource的json结果，sample会处理这些json结果得到输出在output/log.txt中
-- sample中也演示了如何从file里获取这些json文件并同步对这些json文件处理
 
 ## 运行样例
-- 项目clone下来之后，可以进入samples/cpp目录，运行./test_program即可看到samples/resource内的演示表格输出
+- 项目clone下来之后，可以进入samples/cpp目录，运行./test_program在output/log.txt中即可看到samples/resource内的演示表格输出
 
 ## 使用方式
 
@@ -50,7 +49,6 @@ delete engine;
 - `getPageTablesSize` 获取具体Page的表格数量
 - `findTables` 获取具体Page的表格
 - `getDocument` 获取整个PDF数据的结构体
-
 
 ## Sample代码框架
 ### 说明
