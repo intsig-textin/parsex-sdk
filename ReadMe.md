@@ -3,10 +3,10 @@
 - [SDK介绍]()
 
 ## 代码框架
-- include目录包含所需调用所用到的头文件
-- samples目录包含获取表格信息的演示用程序代码与pdf/json文件
-- src目录包含功能实现的具体源文件
-- third_party目录包含编译所需要的第三方代码文件
+- `linux_sdk/include`目录包含所需调用所用到的头文件
+- `linux_sdk/samples`目录包含获取表格信息的演示用程序代码与pdf/json文件
+- `linux_sdk/src`目录包含功能实现的具体源文件
+- `linux_sdk/third_party`目录包含编译所需要的第三方代码文件
 
 ## 编译运行
 - 环境准备: gcc/g++ 8.1及以上
@@ -15,7 +15,7 @@
 - 每轮执行都会创建新的`output/log.txt`
 
 ## 运行样例
-- 项目clone下来之后，可以进入`samples/cpp`目录，运行`./test_program`
+- 项目clone下来之后，可以进入`samples/cpp`目录，运行`./extract_table`
 - 在`output/log.txt`中即可看到`samples/resource`内的演示表格输出
 
 ## 使用方式
@@ -51,8 +51,6 @@ delete engine;
 - `getPageTablesSize` 获取具体Page的表格数量
 - `findTables` 获取具体Page的表格
 - `getDocument` 获取整个PDF数据的结构体
-
-### SDK API返回值说明
 
 ## Sample代码框架
 ### 说明
