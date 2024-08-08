@@ -19,8 +19,9 @@
 
 ## 使用方式
 
-最基本的使用方式，处理表格数据：
+### 基本的使用方式
 
+处理表格数据：
 ```cpp
 ITextInParserEngine* engine = ITextInParserEngine::createAndStartTextInParserEngine();
 engine->parseFile(filePath.c_str()); // filePath为需要解析的json文件路径
@@ -38,6 +39,18 @@ for (int page_i = 0; i < pageSize; ++page_i) {
 engine->release();
 delete engine;
 ```
+
+### SDK API使用说明
+
+- `createAndStartTextInParserEngine`获取一个Parser的实列
+- `parse` 解析json的原始字符串
+- `parseFile` 根据json文件路径读取json数据解析
+- `release` 释放Parser内部的资源
+- `getPageSize` 获取PDF中的Page数量
+- `getPageTablesSize` 获取具体Page的表格数量
+- `findTables` 获取具体Page的表格
+- `getDocument` 获取整个PDF数据的结构体
+
 
 ## Sample代码框架
 ### 说明
