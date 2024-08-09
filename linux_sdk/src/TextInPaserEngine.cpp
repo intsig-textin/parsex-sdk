@@ -1,5 +1,4 @@
 // Copyright (c) 2024 Intsig.net. All rights reserved
-// Author shuwei_jing@intsig.net
 
 #include <iostream>
 #include <fstream>
