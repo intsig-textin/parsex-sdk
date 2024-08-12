@@ -45,7 +45,7 @@ delete engine;
 - 每轮执行都会创建新的`output/log.txt`
 
 ## 运行样例
-- 项目clone下来之后，可以进入`samples/cpp`目录，运行`./te t`
+- 项目clone下来之后，可以进入`samples/cpp`目录，运行`./test_program`
 - 在`output/log.txt`中即可看到`samples/resource`内的演示表格输出
 
 ## 使用方式
