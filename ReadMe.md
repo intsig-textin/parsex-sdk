@@ -1,5 +1,5 @@
 ## 整体介绍
-x2md_tools项目能辅助开发者解析通过`pdf_to_markdown`的restful_api([pdf_to_markdown产品介绍](https://www.textin.com/document/x_to_markdown))返回的json结果
+x2md_tools 提供了一套sdk， 帮助开发者解析[pdf_to_markdown](https://www.textin.com/document/x_to_markdown)的结果，获取对应的版面元素的数据结构
 
 
 ## 版本相关
