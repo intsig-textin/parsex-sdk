@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import textin_parser
 import os
 
@@ -28,8 +29,15 @@ def print_pos(pos, logfile, indent_level=0):
 
 def print_text_content(t_contents, logfile, indent_level=1):
     for i, text_content in enumerate(t_contents):
+        try:
+            # 直接使用 repr 包装原始数据，避免任何编码问题
+            decoded_text = repr(text_content.text)
+        except Exception as e:
+            # 如果出错，记录错误信息
+            decoded_text = f"<Error decoding text: {str(e)}>"
+
         log_message(f"文本内容 {i + 1}:", logfile, indent_level)
-        log_message(f"文本: {text_content.text}", logfile, indent_level + 1)
+        log_message(f"文本: {decoded_text}", logfile, indent_level + 1)
         log_message(f"方向: {text_content.direction}", logfile, indent_level + 1)
         log_message(f"分数: {text_content.score}", logfile, indent_level + 1)
         log_message(f"角度: {text_content.angle}", logfile, indent_level + 1)
@@ -42,6 +50,7 @@ def print_text_content(t_contents, logfile, indent_level=1):
         log_message(f"字符候选分数:", logfile, indent_level + 1)
         for cand_score in text_content.char_cand_score:
             log_message(f"分数: {cand_score.score}", logfile, indent_level + 2)
+
 
 def print_image_content(i_contents, logfile, indent_level=1):
     for i, image_content in enumerate(i_contents):
