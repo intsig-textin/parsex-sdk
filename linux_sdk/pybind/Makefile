@@ -3,7 +3,7 @@ CXXFLAGS = -O3 -Wall -shared -std=c++17 -fPIC
 
 PYTHON_VERSION = 3.6
 PYTHON_INCLUDE = /usr/include/python3.6
-LIB_PATH = /usr/lib/python3.6/config-3.6m-x86_64-linux-gnu
+LIB_PATH = ../../python_sdk
 PYBIND11_INCLUDE = $(shell python3 -m pybind11 --includes)
 
 INCLUDES = -I$(PYTHON_INCLUDE) -I../third_party/include/ -I/usr/include/python3.6m $(PYBIND11_INCLUDE)
