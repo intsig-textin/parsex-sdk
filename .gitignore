@@ -46,7 +46,7 @@
 # dev
 app
 build
-output
+linux_sdk/samples/output
 # output.log
 # resource
 lib
