@@ -47,6 +47,7 @@
 app
 build
 output
+output.log
 # resource
 lib
 # data
