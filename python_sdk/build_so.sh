@@ -1,10 +1,17 @@
 #!/bin/bash
 
-# 保存当前目录
 CURRENT_DIR=$(pwd)
 
 # 进入指定的Makefile目录
 cd ../linux_sdk/pybind || { echo "Directory not found"; exit 1; }
+
+# 检查是否安装了 pybind11
+echo "Checking if pybind11 is installed..."
+if ! python3 -c "import pybind11" 2>/dev/null; then
+    echo "pybind11 not found. Installing..."
+    pip3 install pybind11 || { echo "Failed to install pybind11"; cd "$CURRENT_DIR"; exit 1; }
+    sleep 1  # 等待安装完成
+fi
 
 # 设置Debug标志
 if [ "$1" == "debug" ]; then
@@ -23,7 +30,7 @@ if [ $? -eq 0 ]; then
     echo "Build succeeded."
 else
     echo "Build failed."
-    # 回到原来的目录
+    # 编译失败回到原来的目录
     cd "$CURRENT_DIR"
     exit 1
 fi

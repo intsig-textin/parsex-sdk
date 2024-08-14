@@ -20,11 +20,6 @@ all: $(TARGET)
 # Target to build the shared object
 $(TARGET): $(SRCS)
 	@echo "Building with Python $(PYTHON_VERSION)..."
-	@echo "Checking if pybind11 is installed..."
-	@if ! python3 -c "import pybind11" 2>/dev/null; then \
-		echo "pybind11 not found. Installing..."; \
-		pip3 install pybind11; \
-	fi
 	mkdir -p $(TARGET_DIR)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ -o $@ -L$(PYTHON_LIB) -lpython$(PYTHON_VERSION)
 

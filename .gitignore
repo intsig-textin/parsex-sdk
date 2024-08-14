@@ -47,7 +47,7 @@
 app
 build
 linux_sdk/samples/output
-# output.log
+output.log
 # resource
 lib
 # data
