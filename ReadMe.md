@@ -1,4 +1,4 @@
-## 整体介绍
+# 整体介绍
 x2md_tools 提供了一套sdk， 帮助开发者解析[pdf_to_markdown](https://www.textin.com/document/x_to_markdown)的结果，获取对应的版面元素的数据结构
 
 
@@ -93,9 +93,9 @@ Python API是对Cpp中接口通过Pybind11做的二次封装。所以和Linux SD
 
 ## 编译运行
 - 环境准备: gcc/g++ 8/9 python3为3.6及其以上
-- 进入`python_sdk/`，运行`build_so.sh`即可在当前目录下获得与`python3`版本一致的so，注：如果出现`pybind11/pybind11.h: No such file or directory`请再执行一次`build_so.sh`
+- 进入`python_sdk/`，运行`build_so.sh`即可在当前目录下获得与`python3`版本一致的so
 - 生成得到so后使用`python3`运行`python_sdk/`下的`parser_test.py`，即可在`output.log`看到所展示的对当前目录下`chinese-tables.json`的解析结果
-- 开发者可以使用`import textin_parser`来访问so里提供的接口
+- 开发者可以使用`import textin_parser`来访问so里提供的接口，使用时需要把so加入到开发者目录中
 
 
 
