@@ -31,7 +31,22 @@ for (int page_i = 0; page_i < pageSize; ++page_i) {
 engine->release();
 delete engine;
 ```
-
+#### Python
+处理表格数据：
+```python
+parser = SimpleTextInParserEngine.createAndStartTextInParserEngine()
+# 测试文件路径
+test_json_path = 'example.json'
+# 调用解析方法
+parser.parse(test_json_path)
+# 获取第一页的表格数组
+tables = parser.findTables(0)
+# 循环打印每个表格对象
+for index, table in enumerate(tables):
+    print(f"Table {index + 1}:")
+    parser.print_all_elements(table)
+    print("\n")
+```
 #### Python SDK
 处理表格数据：
 ```python
@@ -87,16 +102,129 @@ if page_size > 0:
 - `samples/resource`目录包含file文件中通过TEXTIN RESTAPI返回的json结果并保存成了json文件（为了方便演示，直接展示处理`samples/resource`目录里json）
 - output目录包含输出的结果文件log.txt
 
+# Python介绍
+- `python_sdk`是对Cpp中接口通过Pybind11做的二次封装。所以和Linux SDK提供的C++ API功能完全一样，每次需要运行`build_so.sh`脚本构建指定`python3`版本的so
+- `python`是由纯python语言编写的pip包，可以在任何操作系统上运行，目前已上传到pip官网，可以直接使用`pip install text_in_parser_engine`加载使用
 
-# Python SDK介绍
-Python API是对Cpp中接口通过Pybind11做的二次封装。所以和Linux SDK提供的C++ API功能完全一样，每次需要运行`build_so.sh`脚本构建指定`python3`版本的so
 
-## 编译运行
+### 数据类说明
+通过将json字符串直接还原成python语言的数据类结构，在原始的open api返回结果上不做任何修改
+
+XToMarkdownOutput
+- version (str): 文档解析引擎的版本号。
+- duration (int): 文档解析引擎处理文档所需的时间（以毫秒为单位）。
+- result (dict): 包含文档的解析结果，通常包括解析后的 Markdown 内容和页面信息。
+- metrics (Metrics): 包含关于文档的各种统计信息的对象。
+  
+Metrics
+- document_type (str): 文档类型（例如：pdf, word, excel 等）。
+- total_page_number (int): 文档的总页数。
+- valid_page_number (int): 成功解析的有效页数。
+- paragraph_number (int): 文档中的段落数。
+- character_number (int): 文档中的字符总数。
+  
+PriPage
+- status (str): 当前页面的解析状态
+- page_id (int): 页面编号。
+- durations (float): 处理当前页面所需的时间（以毫秒为单位）。
+- image_id (Optional[str]): 页面图像的唯一标识符（可选）。
+- width (Optional[int]): 页面宽度（可选）。
+- height (Optional[int]): 页面高度（可选）。
+- angle (Optional[int]): 页面旋转角度（可选）。
+- num (Optional[int]): 页面编号（可选）。
+- image (Optional[PriPageImageData]): 页面图像数据。
+- content (Optional[List[Union[PriPageContentTextLine, PriPageContentImage]]]): 页面内的内容，包括文本行和图像。
+- structured (Optional[List[Union[PriPageStructuredTable]]]): 页面内的结构化数据，如表格。
+  
+PriPageStructuredTable
+- type (str): 表格类型（通常为 "table"）。
+- pos (List[int]): 表格的坐标位置。
+- rows (int): 表格的行数。
+- cols (int): 表格的列数。
+- columns_width (List[int]): 每列的宽度列表。
+- rows_height (List[int]): 每行的高度列表。
+- cells (List[PriPageStructuredTableTableCell]): 表格单元格的列表。
+- sub_type (Optional[str]): 表格的子类型（默认 "bordered"）。
+- is_continue (Optional[bool]): 表示表格是否在多页之间连续。
+  
+PriPageStructuredTableTableCell
+- row (int): 单元格所在的行。
+- col (int): 单元格所在的列。
+- pos (List[int]): 单元格的坐标位置。
+- content (List[Union[PriPageStructuredTableTableCellTextBlock, PriPageStructuredTableTableCellImageBlock]]]): 单元格的内容，可以是文本块或图像块。
+- row_span (Optional[int]): 单元格的行跨度（默认为 1）。
+- col_span (Optional[int]): 单元格的列跨度（默认为 1）。
+  
+PriPageStructuredTableTableCellTextBlock
+- type (str): 内容类型（通常为 "textblock"）。
+- pos (List[int]): 文本块的坐标位置。
+- content (List[int]): 与此文本块关联的文本行 ID 列表。
+- sub_type (Optional[str]): 文本块的子类型（可选）。
+- is_continue (Optional[bool]): 表示文本块是否在多页之间连续。
+  
+PriPageStructuredTableTableCellImageBlock
+- type (str): 内容类型（通常为 "imageblock"）。
+- pos (List[int]): 图像块的坐标位置。
+- zorder (int): 图像块的 Z 轴顺序。
+- content (List[int]): 与此图像块关联的图像 ID 列表。
+  
+PriPageContentTextLine
+- id (int): 文本行的唯一标识符。
+- type (str): 内容类型（通常为 "line"）。
+- text (str): 文本行的内容。
+- pos (List[int]): 文本行的坐标位置。
+- angle (Optional[int]): 文本行的旋转角度（可选）。
+- sub_type (Optional[str]): 文本行的子类型（可选）。
+- direction (Optional[int]): 文本行的方向（可选）。
+- score (Optional[float]): 文本行的置信度评分（可选）。
+- char_pos (Optional[List[List[int]]]): 文本行中每个字符的坐标位置（可选）。
+- char_cand (Optional[List[List[str]]]): 文本行中每个字符的候选列表（可选）。
+- char_cand_score (Optional[List[List[float]]]): 文本行中每个字符的候选评分列表（可选）。
+  
+PriPageContentImage
+- id (int): 图像的唯一标识符。
+- type (str): 内容类型（通常为 "image"）。
+- pos (List[int]): 图像的坐标位置。
+- data (PriPageContentImageData): 图像的数据对象，包含图像的实际数据或路径。
+- sub_type (Optional[str]): 图像的子类型（可选）。
+- stamp_type (Optional[str]): 图像的印章类型（可选）。
+- stamp_shape (Optional[str]): 图像的印章形状（可选）。
+- stamp_color (Optional[str]): 图像的印章颜色（可选）。
+- size (Optional[List[int]]): 图像的尺寸（可选）。
+
+
+### 数据类关系树状图
+```
+XToMarkdownOutput
+├── result (dict)
+│   └── pages (List[PriPage])
+│       ├── content (List[Union[TextLine, Image]])
+│       │   ├── TextLine
+│       │   └── Image
+│       └── structured (List[Table])
+│           ├── Table
+│           │   ├── cells (List[Cell])
+│           │   │   ├── Cell
+│           │   │   │   ├── content (List[Union[TextBlock, ImageBlock]])
+│           │   │   │   │   ├── TextBlock
+│           │   │   │   │   └── ImageBlock
+│           │   │   └── columns_width, rows_height
+│           │   └── sub_type, is_continue
+├── metrics (Metrics)
+│   └── document_type, total_page_number, valid_page_number, paragraph_number, character_number
+└── version, duration
+```
+
+
+## 测试输出
+以下是python_sdk编译C++的.so的步骤
 - 环境准备: gcc/g++ 8/9 python3为3.6及其以上
 - 进入`python_sdk/`，运行`build_so.sh`即可在当前目录下获得与`python3`版本一致的so
 - 生成得到so后使用`python3`运行`python_sdk/`下的`parser_test.py`，即可在`output.log`看到所展示的对当前目录下`chinese-tables.json`的解析结果
 - 开发者可以使用`import textin_parser`来访问so里提供的接口，使用时需要把so加入到开发者目录中
 
-
+以下是python pip包的使用步骤
+- 使用`pip install text_in_parser_engine`直接安装text_in_parser模块
+- 进入`python/`，运行`test_parser.py`可看到演示的输出内容，推荐将信息重定向到文件中`python3 test_parser.py > output.log 2>&1`
 
 
