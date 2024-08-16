@@ -1,0 +1,16 @@
+Metadata-Version: 2.1
+Name: text-in-parser-engine
+Version: 0.1.2
+Summary: A text-in parser engine for document processing
+Home-page: https://github.com/intsig/x2md_tools/python/text_in_parser_engine
+Author: doughboii
+License: UNKNOWN
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+
+UNKNOWN
+

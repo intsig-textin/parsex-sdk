@@ -1,5 +1,5 @@
 import unittest
-from text_in_parser_engine.text_in_parser_engine import SimpleTextInParserEngine, XToMarkdownOutput
+from text_in_parser_engine import SimpleTextInParserEngine, XToMarkdownOutput
 
 class TestSimpleTextInParserEngine(unittest.TestCase):
     def test_parse_json(self):

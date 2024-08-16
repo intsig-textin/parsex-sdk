@@ -1,0 +1,10 @@
+README.md
+setup.py
+tests/__init__.py
+tests/test_parser.py
+text_in_parser_engine/__init__.py
+text_in_parser_engine/text_in_parser_engine.py
+text_in_parser_engine.egg-info/PKG-INFO
+text_in_parser_engine.egg-info/SOURCES.txt
+text_in_parser_engine.egg-info/dependency_links.txt
+text_in_parser_engine.egg-info/top_level.txt
