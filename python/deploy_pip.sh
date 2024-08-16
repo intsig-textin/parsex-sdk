@@ -3,7 +3,7 @@
 set -e
 
 # PyPI API Token
-API_TOKEN="pypi-AgEIcHlwaS5vcmcCJDIxYzUwMTNhLWYxOTItNGU3NC1iZWI2LTdiZWVkOTY1YWE2ZgACKlszLCI0NzViNGJkNC05YTRmLTRiNjktYmM1MS0wNWQ0NzA2YzU4MGIiXQAABiBTyPjZd52L8KGwqm_DLlhbAtFLcoQmwvbvHcfjOfDjnw"
+API_TOKEN="if you want to upload use your PyPI API Token not mine"
 
 echo "Cleaning up old builds..."
 rm -rf dist/*
