@@ -2,12 +2,6 @@
 x2md_tools 提供了一套sdk， 帮助开发者解析[pdf_to_markdown](https://www.textin.com/document/x_to_markdown)的结果，获取对应的版面元素的数据结构
 
 
-## 版本相关
-| 版本         | 说明                                     |
-|------------|----------------------------------------|
-| 1.0.0（当前版本）      | 支持提取json中`table`数据与`cell`数据，支持Linux C版本与Python版本      |
-
-
 ## 快速开始
 
 ### 基本的使用方式
@@ -34,17 +28,39 @@ delete engine;
 #### Python
 处理表格数据：
 ```python
+# 初始化解析器
 parser = SimpleTextInParserEngine.createAndStartTextInParserEngine()
 # 测试文件路径
-test_json_path = 'example.json'
+test_json_path = 'chinese-tables.json'
 # 调用解析方法
 parser.parse(test_json_path)
-# 获取第一页的表格数组
-tables = parser.findTables(0)
-# 循环打印每个表格对象
-for index, table in enumerate(tables):
-    print(f"Table {index + 1}:")
-    parser.print_all_elements(table)
+# 检查解析结果是否为预期
+self.assertIsInstance(parser.pri_document, XToMarkdownOutput)
+# 获取当前的页数
+total_pages = parser.getPageSize()
+print(f"Total valid page size: {total_pages}")
+# 遍历每一页
+for page_id in range(total_pages):
+    print(f"=== Page {page_id + 1} ===")
+    print("\n")
+    # 获取当前页面的表格数组
+    tables = parser.findTables(page_id)
+    # 循环打印每个表格对象
+    for index, table in enumerate(tables):
+        print(f"Table {index + 1}:")
+        parser.print_all_elements(table)
+        print("\n")
+    # 获取当前页面的图片数组
+    images = parser.findImages(page_id)
+    # 循环打印每个图片对象
+    for index, image in enumerate(images):
+        print(f"Image {index + 1}:")
+        parser.print_all_elements(image) # 限定只能打印前50(默认)个字符
+        print("\n")
+    # 获取当前页面的文本信息
+    text = parser.findText(page_id)
+    print("Text:")
+    parser.print_all_elements(text, 0, 1000) # 限定只能打印前1000个字符
     print("\n")
 ```
 #### Python SDK
@@ -63,6 +79,11 @@ if page_size > 0:
 ```
 
 # Linux SDK介绍
+
+## Linux SDK版本相关
+| 版本         | 说明                                     |
+|------------|----------------------------------------|
+| 0.0.1（当前版本）      | 支持提取json中`table`数据与`cell`数据，支持Linux C版本与Python版本      |
 
 ## 代码框架
 - `linux_sdk/include`目录包含所需调用所用到的头文件
@@ -106,8 +127,19 @@ if page_size > 0:
 - `python_sdk`是对Cpp中接口通过Pybind11做的二次封装。所以和Linux SDK提供的C++ API功能完全一样，每次需要运行`build_so.sh`脚本构建指定`python3`版本的so
 - `python`是由纯python语言编写的pip包，可以在任何操作系统上运行，目前已上传到pip官网，可以直接使用`pip install text_in_parser_engine`加载使用
 
+## Python SDK版本
+| 版本         | 说明                                     |
+|------------|----------------------------------------|
+| 0.0.1（当前版本）      | 支持提取json中`table`数据与`cell`数据      |
 
-### 数据类说明
+
+## Python PiP包版本
+| 版本         | 说明                                     |
+|------------|----------------------------------------|
+| 0.0.3（当前版本）      | 支持提取json中`table`数据与`cell`数据，支持提取页中的图片以及文本数据    |
+
+
+## Python PiP数据类说明
 通过将json字符串直接还原成python语言的数据类结构，在原始的open api返回结果上不做任何修改
 
 XToMarkdownOutput
@@ -193,7 +225,7 @@ PriPageContentImage
 - size (Optional[List[int]]): 图像的尺寸（可选）。
 
 
-### 数据类关系树状图
+### Python PiP数据类关系树状图
 ```
 XToMarkdownOutput
 ├── result (dict)
