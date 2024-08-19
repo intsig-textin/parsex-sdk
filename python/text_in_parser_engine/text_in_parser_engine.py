@@ -350,7 +350,28 @@ class SimpleTextInParserEngine:
 
         return new_tables
 
+    def findImages(self, page_id: int) -> List[PriPageContentImage]:
+            page = next((p for p in self.pri_document.result['pages'] if p.page_id == page_id), None)
+
+            if not page:
+                raise ValueError(f"Page with page_id {page_id} not found.")
+
+            images = [item for item in page.content if isinstance(item, PriPageContentImage)]
+
+            return images
+
+    def findText(self, page_id: int) -> str:
+        page = next((p for p in self.pri_document.result['pages'] if p.page_id == page_id), None)
+
+        if not page:
+            raise ValueError(f"Page with page_id {page_id} not found.")
+
+        combined_text = ''.join(item.text for item in page.content if isinstance(item, PriPageContentTextLine))
+
+        return combined_text
+
     def getOrigin(self):
         return self.pri_document
 
-
+    def getPageSize(self):
+        return self.pri_document.metrics.total_page_number

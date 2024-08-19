@@ -50,9 +50,10 @@ linux_sdk/samples/output
 output.log
 # resource
 lib
+dist
 # data
 # test_program
-
+text_in_parser_engine.egg-info
 script
 markdown
 images
