@@ -1,4 +1,8 @@
 import json
+import cv2
+print(cv2.__version__)
+import numpy as np
+import base64
 from typing import List, Dict, Union, Optional
 from pathlib import Path
 # Define the data classes to represent the OpenAPI schema components
@@ -56,12 +60,34 @@ class PriPageImageData:
         self.region = region
         self.path = path
 
+    def to_cv_mat(self) -> np.ndarray:
+        if self.base64:
+            # from base64 decode
+            image_data = np.frombuffer(base64.b64decode(self.base64), dtype=np.uint8)
+            image = cv2.imdecode(image_data, cv2.IMREAD_COLOR)
+            if image is None:
+                raise ValueError("Cannot decode image from base64")
+            return image
+        else:
+            raise ValueError("No valid image data found.")
+
 class PriPageContentImageData:
     def __init__(self, base64: Optional[str] = None, region: Optional[List[int]] = None,
             path: Optional[str] = None):
         self.base64 = base64
         self.region = region
         self.path = path
+
+    def to_cv_mat(self) -> np.ndarray:
+        if self.base64:
+            # from base64 decode
+            image_data = np.frombuffer(base64.b64decode(self.base64), dtype=np.uint8)
+            image = cv2.imdecode(image_data, cv2.IMREAD_COLOR)
+            if image is None:
+                raise ValueError("Cannot decode image from base64")
+            return image
+        else:
+            raise ValueError("No valid image data found.")
 
 
 class PriPageContentImage:
@@ -145,6 +171,9 @@ class CodeAndMessage:
         self.message = message
 
 # Example of how to parse the response JSON into these structures
+def output_cv_mat(image_data: PriPageContentImageData) -> np.ndarray:
+    cv_mat = image_data.to_cv_mat()
+    return cv_mat
 
 def parse_x_to_markdown_output(data: dict) -> XToMarkdownOutput:
     result_data = data.get('result', {})
@@ -351,14 +380,26 @@ class SimpleTextInParserEngine:
         return new_tables
 
     def findImages(self, page_id: int) -> List[PriPageContentImage]:
-            page = next((p for p in self.pri_document.result['pages'] if p.page_id == page_id), None)
+        page = next((p for p in self.pri_document.result['pages'] if p.page_id == page_id), None)
 
-            if not page:
-                raise ValueError(f"Page with page_id {page_id} not found.")
+        if not page:
+            raise ValueError(f"Page with page_id {page_id} not found.")
 
-            images = [item for item in page.content if isinstance(item, PriPageContentImage)]
+        images = [item for item in page.content if isinstance(item, PriPageContentImage)]
 
-            return images
+        return images
+
+    def extractContentImagesCvMat(self, page_id: int) -> List[np.ndarray]:
+        page = next((p for p in self.pri_document.result['pages'] if p.page_id == page_id), None)
+
+        if not page:
+            raise ValueError(f"Page with page_id {page_id} not found.")
+
+        images = [item.data for item in page.content if isinstance(item, PriPageContentImage)]
+        cv_mats = [image.to_cv_mat() for image in images]
+
+        return cv_mats
+
 
     def findText(self, page_id: int) -> str:
         page = next((p for p in self.pri_document.result['pages'] if p.page_id == page_id), None)
@@ -375,3 +416,13 @@ class SimpleTextInParserEngine:
 
     def getPageSize(self):
         return self.pri_document.metrics.total_page_number
+
+    def extractPageImageCvMat(self, page_id: int) -> Optional[np.ndarray]:
+        page = next((p for p in self.pri_document.result['pages'] if p.page_id == page_id), None)
+
+        if page is None:
+            raise ValueError(f"Page with page_id {page_id} not found.")
+
+        cv_mat = page.image.to_cv_mat()
+
+        return cv_mat
