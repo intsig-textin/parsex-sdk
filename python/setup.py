@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='text_in_parser_engine',
-    version='0.1.4',
+    version='0.1.3',
     author='doughboii',
     description='A text-in parser engine for document processing',
     long_description=open('README.md').read(),
@@ -10,7 +10,7 @@ setup(
     url='https://github.com/intsig/x2md_tools/python/text_in_parser_engine',
     packages=find_packages(),
     install_requires=[
-        'opencv-python',
+        'opencv-python-headless',
         'numpy',
     ],
     classifiers=[
