@@ -1,8 +1,4 @@
 import json
-import cv2
-print(cv2.__version__)
-import numpy as np
-import base64
 from typing import List, Dict, Union, Optional
 from pathlib import Path
 # Define the data classes to represent the OpenAPI schema components
@@ -52,6 +48,11 @@ class PriPageStructuredTable:
         self.sub_type = sub_type
         self.is_continue = is_continue
 
+class PriPageStructuredPara:
+    def __init__(self, pos, content):
+        self.pos = pos
+        self.lines = content
+
 
 class PriPageImageData:
     def __init__(self, base64: Optional[str] = None, region: Optional[List[int]] = None,
@@ -60,34 +61,12 @@ class PriPageImageData:
         self.region = region
         self.path = path
 
-    def to_cv_mat(self) -> np.ndarray:
-        if self.base64:
-            # from base64 decode
-            image_data = np.frombuffer(base64.b64decode(self.base64), dtype=np.uint8)
-            image = cv2.imdecode(image_data, cv2.IMREAD_COLOR)
-            if image is None:
-                raise ValueError("Cannot decode image from base64")
-            return image
-        else:
-            raise ValueError("No valid image data found.")
-
 class PriPageContentImageData:
     def __init__(self, base64: Optional[str] = None, region: Optional[List[int]] = None,
             path: Optional[str] = None):
         self.base64 = base64
         self.region = region
         self.path = path
-
-    def to_cv_mat(self) -> np.ndarray:
-        if self.base64:
-            # from base64 decode
-            image_data = np.frombuffer(base64.b64decode(self.base64), dtype=np.uint8)
-            image = cv2.imdecode(image_data, cv2.IMREAD_COLOR)
-            if image is None:
-                raise ValueError("Cannot decode image from base64")
-            return image
-        else:
-            raise ValueError("No valid image data found.")
 
 
 class PriPageContentImage:
@@ -135,7 +114,7 @@ class PriPage:
             num: Optional[int] = 0, image: Optional[PriPageImageData] = None,
             # readable: Optional[List[Union[Paragraph, TableText]]] = None,
             content: Optional[List[Union[PriPageContentTextLine, PriPageContentImage]]] = None,
-            structured: Optional[List[Union[PriPageStructuredTable]]] = None):
+            structured: Optional[List[Union[PriPageStructuredTable]]] = None, structured_para:Optional[List[Union[PriPageStructuredPara]]] = None):
         self.status = status
         self.page_id = page_id
         self.durations = durations
@@ -148,6 +127,7 @@ class PriPage:
         # self.readable = readable or []
         self.content = content or []
         self.structured = structured or []
+        self.structured_para = structured_para or []
 
 class Metrics:
     def __init__(self, document_type: str, total_page_number: int,
@@ -171,9 +151,6 @@ class CodeAndMessage:
         self.message = message
 
 # Example of how to parse the response JSON into these structures
-def output_cv_mat(image_data: PriPageContentImageData) -> np.ndarray:
-    cv_mat = image_data.to_cv_mat()
-    return cv_mat
 
 def parse_x_to_markdown_output(data: dict) -> XToMarkdownOutput:
     result_data = data.get('result', {})
@@ -203,24 +180,31 @@ def parse_x_to_markdown_output(data: dict) -> XToMarkdownOutput:
                 PriPageStructuredTable(**filter_table_data(s))
                 for s in page.get('structured', [])
                 if s.get('type') == 'table'
-            ]
+            ],
+            structured_para = [s for s in page.get('structured', []) if s.get('type') == 'textblock']
         )
         for page in result_data.get('pages', [])
     ]
-
+    #for page in pages:
+        #print(page.structured)
+        #exit(0)
+    detail = result_data['detail']
     result = {
         'src_page_count': result_data.get('src_page_count', 0),
         'markdown': result_data.get('markdown', ''),
-        'pages': pages
+        'pages': pages,
+        'detail': detail
     }
 
-    metrics = Metrics(
-        document_type=metrics_data.get('document_type', 'unknown'),
-        total_page_number=metrics_data.get('total_page_number', 0),
-        valid_page_number=metrics_data.get('valid_page_number', 0),
-        paragraph_number=metrics_data.get('paragraph_number', 0),
-        character_number=metrics_data.get('character_number', 0)
-    )
+    metrics = Metrics('unknown', result_data.get('total_count', 0), result_data.get('success_count', 0), 0, 0)
+    #metrics = Metrics(
+    #    document_type=metrics_data.get('document_type', 'unknown'),
+    #    total_page_number=metrics_data.get('total_page_number', 0),
+    #    valid_page_number=metrics_data.get('valid_page_number', 0),
+    #    paragraph_number=metrics_data.get('paragraph_number', 0),
+    #    character_number=metrics_data.get('character_number', 0)
+    #)
+    print(metrics.total_page_number)
 
     return XToMarkdownOutput(
         version=data.get('version', ''),
@@ -264,7 +248,7 @@ class SimpleTextInParserEngine:
             except json.JSONDecodeError as e:
                 print(f"JSON 解析错误: {e}")
                 return -1  # 错误返回 -1
-
+        print('start to prase_x_to_markdown_output')
         self.pri_document = parse_x_to_markdown_output(data)
         # self.print_all_elements(self.pri_document)
         return 0
@@ -378,28 +362,34 @@ class SimpleTextInParserEngine:
                 new_tables.append(new_table)
 
         return new_tables
+    
+    def getParagraph(self,page_id: int) -> List[PriPageStructuredPara]:
+        page = next((p for p in self.pri_document.result['pages'] if p.page_id == page_id), None)
+
+        if not page:
+            raise ValueError(f"Page with page_id {page_id} not found.")
+
+        content_map = {c.id: c for c in page.content}
+
+        paragraphs = []
+        print(page.structured_para)
+        for item in page.structured_para:
+            if isinstance(item, dict):
+                resolved_content = [content_map[content_id] for content_id in item["content"]]
+                para = PriPageStructuredPara(item["pos"], resolved_content)
+                paragraphs.append(para)
+
+        return paragraphs
 
     def findImages(self, page_id: int) -> List[PriPageContentImage]:
-        page = next((p for p in self.pri_document.result['pages'] if p.page_id == page_id), None)
+            page = next((p for p in self.pri_document.result['pages'] if p.page_id == page_id), None)
 
-        if not page:
-            raise ValueError(f"Page with page_id {page_id} not found.")
+            if not page:
+                raise ValueError(f"Page with page_id {page_id} not found.")
 
-        images = [item for item in page.content if isinstance(item, PriPageContentImage)]
+            images = [item for item in page.content if isinstance(item, PriPageContentImage)]
 
-        return images
-
-    def extractContentImagesCvMat(self, page_id: int) -> List[np.ndarray]:
-        page = next((p for p in self.pri_document.result['pages'] if p.page_id == page_id), None)
-
-        if not page:
-            raise ValueError(f"Page with page_id {page_id} not found.")
-
-        images = [item.data for item in page.content if isinstance(item, PriPageContentImage)]
-        cv_mats = [image.to_cv_mat() for image in images]
-
-        return cv_mats
-
+            return images
 
     def findText(self, page_id: int) -> str:
         page = next((p for p in self.pri_document.result['pages'] if p.page_id == page_id), None)
@@ -411,18 +401,16 @@ class SimpleTextInParserEngine:
 
         return combined_text
 
+    def getMarkdown(self, page_id: int) -> str:
+        markdown_details = self.pri_document.result['detail']
+        for item in markdown_details:
+            print(item)
+        page_markdown = ''.join(item["text"] for item in markdown_details if item["page_id"] == page_id)
+        return page_markdown
+        
+
     def getOrigin(self):
         return self.pri_document
 
     def getPageSize(self):
         return self.pri_document.metrics.total_page_number
-
-    def extractPageImageCvMat(self, page_id: int) -> Optional[np.ndarray]:
-        page = next((p for p in self.pri_document.result['pages'] if p.page_id == page_id), None)
-
-        if page is None:
-            raise ValueError(f"Page with page_id {page_id} not found.")
-
-        cv_mat = page.image.to_cv_mat()
-
-        return cv_mat
