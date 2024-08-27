@@ -52,8 +52,52 @@ for page_id in range(total_pages):
     	parser.print_all_elements(image)
 ```
 
+# 关键类: `Document`
+
+`Document` 类用于表示一个文档对象，包含了与该文档相关的版本信息、处理时长、结果数据以及度量指标。
+
+### 参数:
+
+- `version` (str): 
+  - 表示文档的版本号。
+  - 该属性通常用于标识文档数据或结构的版本，例如 `1.0.0`。
+
+- `duration` (int): 
+  - 表示通过`Restful API`处理文档所花费的时间，以毫秒为单位。
+  - 该属性用于记录从文档加载、解析到完成整个过程所需的总时间。
+
+- `result` (dict): 
+  - 包含文档的处理结果，通常是结构化数据的字典形式。
+  - 该字典可以包括页面内容、结构化数据（如表格、段落、图片等）以及其他相关信息。
+  - `result` 字典的内容和结构取决于具体应用场景，它可能包含多个键值对来表示文档中的不同部分。
+
+- `metrics` (Metrics): 
+  - 一个 `Metrics` 对象，包含与文档相关的度量指标。
+  - `Metrics` 类通常会包含文档的类型、总页数、有效页数、段落数量、字符数量等信息。
+
+### 属性:
+
+- `self.version` (str): 
+  - 存储传入的版本号，标识文档的版本。
+
+- `self.duration` (int): 
+  - 存储处理文档所需的时间。
+
+- `self.result` (dict): 
+  - 存储文档的处理结果数据。
+
+- `self.metrics` (Metrics): 
+  - 存储文档的度量指标，通过 `Metrics` 对象表示。
+
+### 类的用途:
+
+- `Document` 类是整个文档的抽象表示，包含了与文档相关的核心信息。
+- 这个类可以用于文档的处理、分析或存储。
+- 通过封装文档的版本、处理时间、结果和度量指标，`Document` 类提供了一个统一的接口来访问和操作文档数据。
+
+
 # Lower-Level访问
-通过使用`ParseGenius`解析json，开发者可以通过多层次的类结构访问版面元素，以下是版面元素的类结构解释。
+通过使用`ParseGenius`解析json，开发者可以获取`Document`对象，可以通过多层次的类结构访问版面元素，以下是版面元素的类结构解释。
 
 ### 1. TextBlock
 表示表格单元格中的文本块。
@@ -163,7 +207,6 @@ for page_id in range(total_pages):
 - `structured_para` (Optional[List[Union[Paragraph]]], 可选): 页面的结构化段落列表。
 
 
-
 # High-Level访问
 通过使用`ParseGenius`解析json，开发者可以使用API访问版面元素，相比于`Lower-Level`的方式，API提供了更强大的封装能力以及定制化访问策略。
 
@@ -242,15 +285,14 @@ for page_id in range(total_pages):
 获取原始文档对象。
 
 #### 返回值:
-- 返回原始的文档对象 `pri_document`，包含所有页面和内容的结构化信息。
+- 返回原始的文档对象的拷贝 `Document`，包含所有页面和内容的结构化信息。
 
 #### 说明:
 - 该方法用于获取整个文档的原始数据结构，便于进一步的操作或分析。
 
-### total get_all*/find_all*
+### 7. `total get_all*()/find_all*()`
 所有带有以上前缀的API都为获取整个document的版面元素集合
 
 #### 说明:
 - 区别于需要`page_id`参数，可以直接调用获取整个版面的对应元素结合。
 - 目前支持`find_all_tables`/`get_all_images`/`get_all_text`/`get_all_paragraphs`/`get_all_markdown`
-
