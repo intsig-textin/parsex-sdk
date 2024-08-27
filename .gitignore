@@ -53,7 +53,7 @@ lib
 dist
 # data
 # test_program
-text_in_parser_engine.egg-info
+*.egg-info
 script
 markdown
 images
