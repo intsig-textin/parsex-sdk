@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='ParseGenius',
-    version='0.1.0',
+    version='0.1.1',
     author='doughboii',
     description='A text-in parser engine for pdf to markdown processing',
     long_description=open('README.md').read(),

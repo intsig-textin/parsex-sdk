@@ -122,10 +122,9 @@ class Page:
         self.structured_para = structured_para or []
 
 class Metrics:
-    def __init__(self, document_type: str, total_page_number: int,
+    def __init__(self, document_type: str,
             valid_page_number: int, paragraph_number: int, character_number: int):
         self.document_type = document_type
-        self.total_page_number = total_page_number
         self.valid_page_number = valid_page_number
         self.paragraph_number = paragraph_number
         self.character_number = character_number
@@ -188,14 +187,12 @@ def parse_x_to_markdown_output(data: dict) -> Document:
         'detail': detail
     }
 
-    metrics = Metrics('unknown', result_data.get('total_count', 0), result_data.get('success_count', 0), 0, 0)
-    #metrics = Metrics(
-    #    document_type=metrics_data.get('document_type', 'unknown'),
-    #    total_page_number=metrics_data.get('total_page_number', 0),
-    #    valid_page_number=metrics_data.get('valid_page_number', 0),
-    #    paragraph_number=metrics_data.get('paragraph_number', 0),
-    #    character_number=metrics_data.get('character_number', 0)
-    #)
+    metrics = Metrics(
+       document_type=result_data.get('document_type', 'unknown'),
+       valid_page_number=result_data.get('valid_page_number', 0),
+       paragraph_number=result_data.get('paragraph_number', 0),
+       character_number=result_data.get('character_number', 0)
+    )
 
     return Document(
         version=data.get('version', ''),
@@ -219,7 +216,6 @@ class Pdf2MdParserEngine:
             result={},
             metrics=Metrics(
                 document_type="unknown",
-                total_page_number=0,
                 valid_page_number=0,
                 paragraph_number=0,
                 character_number=0
@@ -402,7 +398,7 @@ class Pdf2MdParserEngine:
         return self.pri_document
 
     def get_page_size(self):
-        return self.pri_document.metrics.total_page_number
+        return len(self.pri_document.result['pages'])
 
     def find_all_tables(self) -> List[Table]:
         all_tables = []

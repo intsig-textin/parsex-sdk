@@ -52,41 +52,163 @@ for page_id in range(total_pages):
     	parser.print_all_elements(image)
 ```
 
+# High-Level访问
+通过使用`ParseGenius`解析json，开发者可以使用API访问版面元素，相比于`Lower-Level`的方式，API提供了更强大的封装能力以及定制化访问策略。
+
+
+### 1. `find_tables(page_id: int)`
+获取指定页面中的所有表格。
+
+#### 参数:
+- `page_id` (int): 需要检索的页面 ID。
+
+#### 返回值:
+- `List[Table]`: 返回一个page_id对应页的包含所有表格对象的列表。
+
+#### 说明:
+- 该方法首先通过 `page_id` 在文档中找到对应的页面。
+- 然后，它解析页面中的结构化表格，逐个处理每个单元格及其内容（文本块或图像块）。
+- 最终返回一个包含表格的列表，每个表格对象包含完整的表格结构信息，也就是通过Content还原之后的表格。
+
+#### 通过`find_tables`得到的Table类结构解析
+
+##### Table
+这里获得的Table类跟Lower-Level中获得的Table类的区别在于前者可以直接访问Table里Cell的内容
+
+###### 属性:
+- **`type`** (`str`):
+  - 表示表格的类型，例如普通表格或复杂表格类型。
+- **`pos`** (`List[int]`):
+  - 表示表格在页面中的位置，通常是以坐标的形式给出。
+- **`rows`** (`int`):
+  - 表示表格的行数。
+- **`cols`** (`int`):
+  - 表示表格的列数。
+- **`columns_width`** (`List[int]`):
+  - 每列的宽度，以像素或其他单位表示。
+- **`rows_height`** (`List[int]`):
+  - 每行的高度，同样以像素或其他单位表示。
+- **`cells`** (`List[TableCell]`):
+  - 表示表格中的所有单元格，每个单元格由 `TableCell` 对象表示。
+  - `TableCell` 对象包括：
+    - **`row`** (`int`): 单元格所在的行号。
+    - **`col`** (`int`): 单元格所在的列号。
+    - **`pos`** (`List[int]`): 单元格的位置。
+    - **`content`** (`List[Union[TextBlockContent, ImageBlockContent]]`): 单元格的内容，可以是文本块或图像块。
+    - **`row_span`** (`int`): 单元格跨越的行数。
+    - **`col_span`** (`int`): 单元格跨越的列数。
+- **`sub_type`** (`Optional[str]`, 默认为 `'bordered'`):
+  - 表示表格的子类型，默认值为 `'bordered'`，也可以是其他类型。
+- **`is_continue`** (`Optional[bool]`, 默认为 `False`):
+  - 标识表格是否与上一页的表格连续。默认值为 `False`，表示该表格是独立的。
+
+### 2. `get_paragraph(page_id: int)`
+获取指定页面中的所有段落。
+
+#### 参数:
+- `page_id` (int): 需要检索的页面 ID。
+
+#### 返回值:
+- `List[Paragraph]`: 返回一个包含所有段落对象的列表。
+
+#### 说明:
+- 该方法通过 `page_id` 找到文档中对应的页面。
+- 然后解析页面中的结构化段落，逐个处理段落中的内容（如文本行）。
+- 最终返回一个段落列表，每个段落对象包含段落的位置和内容。
+
+
+### 3. `get_images(page_id: int)`
+获取指定页面中的所有图像。
+
+#### 参数:
+- `page_id` (int): 需要检索的页面 ID。
+
+#### 返回值:
+- `List[ContentImage]`: 返回一个包含所有图像对象的列表。
+
+#### 说明:
+- 该方法通过 `page_id` 找到文档中对应的页面。
+- 然后从页面内容中筛选出所有图像元素，并将它们添加到返回的列表中。
+
+
+### 4. `get_text(page_id: int)`
+获取指定页面中的所有文本，并将其合并为一个字符串。
+
+#### 参数:
+- `page_id` (int): 需要检索的页面 ID。
+
+#### 返回值:
+- `str`: 返回一个包含所有文本行的合并字符串。
+
+#### 说明:
+- 该方法通过 `page_id` 找到文档中对应的页面。
+- 然后提取页面中的所有文本行，并将它们合并为一个完整的字符串返回。
+
+
+### 5. `get_markdown(page_id: int)`
+获取指定页面的 Markdown 格式内容。
+
+#### 参数:
+- `page_id` (int): 需要检索的页面 ID。
+
+#### 返回值:
+- `str`: 返回指定页面的 Markdown 格式内容。
+
+#### 说明:
+- 该方法从文档结果中的详情部分提取出与指定 `page_id` 相关的 Markdown 内容，并将这些内容合并为一个完整的字符串返回。
+
+### 6. `get_document()`
+获取原始文档对象。
+
+#### 返回值:
+- 返回原始的文档对象的拷贝 `Document`，包含所有页面和内容的结构化信息。
+
+#### 说明:
+- 该方法用于获取整个文档的原始数据结构，便于进一步的操作或分析。
+
+### 7. `total get_all*()/find_all*()`
+所有带有以上前缀的API都为获取整个document的版面元素集合
+
+#### 说明:
+- 区别于需要`page_id`参数，可以直接调用获取整个版面的对应元素结合。
+- 目前支持`find_all_tables`/`get_all_images`/`get_all_text`/`get_all_paragraphs`/`get_all_markdown`
+
+
 # 关键类: `Document`
 
 `Document` 类用于表示一个文档对象，包含了与该文档相关的版本信息、处理时长、结果数据以及度量指标。
 
 ### 参数:
 
-- `version` (str): 
+- `version` (str):
   - 表示文档的版本号。
   - 该属性通常用于标识文档数据或结构的版本，例如 `1.0.0`。
 
-- `duration` (int): 
+- `duration` (int):
   - 表示通过`Restful API`处理文档所花费的时间，以毫秒为单位。
   - 该属性用于记录从文档加载、解析到完成整个过程所需的总时间。
 
-- `result` (dict): 
+- `result` (dict):
   - 包含文档的处理结果，通常是结构化数据的字典形式。
   - 该字典可以包括页面内容、结构化数据（如表格、段落、图片等）以及其他相关信息。
   - `result` 字典的内容和结构取决于具体应用场景，它可能包含多个键值对来表示文档中的不同部分。
 
-- `metrics` (Metrics): 
+- `metrics` (Metrics):
   - 一个 `Metrics` 对象，包含与文档相关的度量指标。
   - `Metrics` 类通常会包含文档的类型、总页数、有效页数、段落数量、字符数量等信息。
 
 ### 属性:
 
-- `self.version` (str): 
+- `self.version` (str):
   - 存储传入的版本号，标识文档的版本。
 
-- `self.duration` (int): 
+- `self.duration` (int):
   - 存储处理文档所需的时间。
 
-- `self.result` (dict): 
+- `self.result` (dict):
   - 存储文档的处理结果数据。
 
-- `self.metrics` (Metrics): 
+- `self.metrics` (Metrics):
   - 存储文档的度量指标，通过 `Metrics` 对象表示。
 
 ### 类的用途:
@@ -206,93 +328,3 @@ for page_id in range(total_pages):
 - `structured` (Optional[List[Union[Table]]], 可选): 页面的结构化表格列表。
 - `structured_para` (Optional[List[Union[Paragraph]]], 可选): 页面的结构化段落列表。
 
-
-# High-Level访问
-通过使用`ParseGenius`解析json，开发者可以使用API访问版面元素，相比于`Lower-Level`的方式，API提供了更强大的封装能力以及定制化访问策略。
-
-
-### 1. `find_tables(page_id: int)`
-获取指定页面中的所有表格。
-
-#### 参数:
-- `page_id` (int): 需要检索的页面 ID。
-
-#### 返回值:
-- `List[Table]`: 返回一个page_id对应页的包含所有表格对象的列表。
-
-#### 说明:
-- 该方法首先通过 `page_id` 在文档中找到对应的页面。
-- 然后，它解析页面中的结构化表格，逐个处理每个单元格及其内容（文本块或图像块）。
-- 最终返回一个包含表格的列表，每个表格对象包含完整的表格结构信息，也就是通过Content还原之后的表格。
-
-
-### 2. `get_paragraph(page_id: int)`
-获取指定页面中的所有段落。
-
-#### 参数:
-- `page_id` (int): 需要检索的页面 ID。
-
-#### 返回值:
-- `List[Paragraph]`: 返回一个包含所有段落对象的列表。
-
-#### 说明:
-- 该方法通过 `page_id` 找到文档中对应的页面。
-- 然后解析页面中的结构化段落，逐个处理段落中的内容（如文本行）。
-- 最终返回一个段落列表，每个段落对象包含段落的位置和内容。
-
-
-### 3. `get_images(page_id: int)`
-获取指定页面中的所有图像。
-
-#### 参数:
-- `page_id` (int): 需要检索的页面 ID。
-
-#### 返回值:
-- `List[ContentImage]`: 返回一个包含所有图像对象的列表。
-
-#### 说明:
-- 该方法通过 `page_id` 找到文档中对应的页面。
-- 然后从页面内容中筛选出所有图像元素，并将它们添加到返回的列表中。
-
-
-### 4. `get_text(page_id: int)`
-获取指定页面中的所有文本，并将其合并为一个字符串。
-
-#### 参数:
-- `page_id` (int): 需要检索的页面 ID。
-
-#### 返回值:
-- `str`: 返回一个包含所有文本行的合并字符串。
-
-#### 说明:
-- 该方法通过 `page_id` 找到文档中对应的页面。
-- 然后提取页面中的所有文本行，并将它们合并为一个完整的字符串返回。
-
-
-### 5. `get_markdown(page_id: int)`
-获取指定页面的 Markdown 格式内容。
-
-#### 参数:
-- `page_id` (int): 需要检索的页面 ID。
-
-#### 返回值:
-- `str`: 返回指定页面的 Markdown 格式内容。
-
-#### 说明:
-- 该方法从文档结果中的详情部分提取出与指定 `page_id` 相关的 Markdown 内容，并将这些内容合并为一个完整的字符串返回。
-
-### 6. `get_document()`
-获取原始文档对象。
-
-#### 返回值:
-- 返回原始的文档对象的拷贝 `Document`，包含所有页面和内容的结构化信息。
-
-#### 说明:
-- 该方法用于获取整个文档的原始数据结构，便于进一步的操作或分析。
-
-### 7. `total get_all*()/find_all*()`
-所有带有以上前缀的API都为获取整个document的版面元素集合
-
-#### 说明:
-- 区别于需要`page_id`参数，可以直接调用获取整个版面的对应元素结合。
-- 目前支持`find_all_tables`/`get_all_images`/`get_all_text`/`get_all_paragraphs`/`get_all_markdown`
