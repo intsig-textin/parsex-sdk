@@ -10,15 +10,15 @@ if config.get("use_local_source"):
     # 使用本地的源码，方便本地修改调试ParseGenius
     parent_dir = Path(__file__).resolve().parent.parent
     sys.path.insert(0, str(parent_dir))
-    from ParseGenius.ParseGenius import Pdf2MdParserEngine, Document
+    import ParseGenius.ParseGenius
 else:
     # 使用pip包的ParseGenius
-    from ParseGenius import Pdf2MdParserEngine, Document
+    import ParseGenius
 
 class TestPdf2MdParserEngine(unittest.TestCase):
     def test_parse_json(self):
         # 初始化解析器
-        parser = Pdf2MdParserEngine.create_parse_genius()
+        parser = ParseGenius.Pdf2MdParserEngine.create_parse_genius()
 
         # 测试文件路径
         test_json_path = 'test_json/test-2333.json'
@@ -28,7 +28,7 @@ class TestPdf2MdParserEngine(unittest.TestCase):
         self.assertEqual(parse_result, 0, "Parsing should return 0 on success")
 
         # 检查解析结果是否为预期
-        self.assertIsInstance(parser.pri_document, Document)
+        self.assertIsInstance(parser.pri_document, ParseGenius.Document)
 
         # 获取文档总页数
         total_pages = parser.get_page_size()
