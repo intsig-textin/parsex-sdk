@@ -1,13 +1,13 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='pdf_parser_engine',
+    name='ParseGenius',
     version='0.1.0',
     author='doughboii',
-    description='A text-in parser engine for pdf processing',
+    description='A text-in parser engine for pdf to markdown processing',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
-    url='https://github.com/intsig/x2md_tools/python/text_in_parser_engine',
+    url='https://github.com/intsig/x2md_tools/python/ParseGenius_engine',
     packages=find_packages(),
     install_requires=[
     ],

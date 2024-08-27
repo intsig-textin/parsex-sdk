@@ -3,7 +3,7 @@ from typing import List, Dict, Union, Optional
 from pathlib import Path
 # Define the data classes to represent the OpenAPI schema components
 
-class PriPageStructuredTableTableCellTextBlock:
+class TextBlock:
     def __init__(self, type: str, pos: List[int],
             content: List[int], sub_type: Optional[str] = None,
             is_continue: Optional[bool] = False):
@@ -13,17 +13,17 @@ class PriPageStructuredTableTableCellTextBlock:
         self.sub_type = sub_type
         self.is_continue = is_continue
 
-class PriPageStructuredTableTableCellImageBlock:
+class ImageBlock:
     def __init__(self, type: str, pos: List[int], zorder: int, content: List[int]):
         self.type = type
         self.pos = pos
         self.zorder = zorder
         self.content = content
 
-class PriPageStructuredTableTableCell:
+class TableCell:
     def __init__(self, row: int, col: int, pos: List[int],
-            content: List[Union[PriPageStructuredTableTableCellTextBlock,
-                                PriPageStructuredTableTableCellImageBlock]],
+            content: List[Union[TextBlock,
+                                ImageBlock]],
             row_span: Optional[int] = 1,
             col_span: Optional[int] = 1):
         self.row = row
@@ -33,10 +33,10 @@ class PriPageStructuredTableTableCell:
         self.row_span = row_span
         self.col_span = col_span
 
-class PriPageStructuredTable:
+class Table:
     def __init__(self, type: str, pos: List[int], rows: int, cols: int,
             columns_width: List[int], rows_height: List[int],
-            cells: List[PriPageStructuredTableTableCell],
+            cells: List[TableCell],
             sub_type: Optional[str] = 'bordered', is_continue: Optional[bool] = False):
         self.type = type
         self.pos = pos
@@ -48,29 +48,21 @@ class PriPageStructuredTable:
         self.sub_type = sub_type
         self.is_continue = is_continue
 
-class PriPageStructuredPara:
+class Paragraph:
     def __init__(self, pos, content):
         self.pos = pos
         self.lines = content
 
 
-class PriPageImageData:
+class ImageData:
     def __init__(self, base64: Optional[str] = None, region: Optional[List[int]] = None,
             path: Optional[str] = None):
         self.base64 = base64
         self.region = region
         self.path = path
 
-class PriPageContentImageData:
-    def __init__(self, base64: Optional[str] = None, region: Optional[List[int]] = None,
-            path: Optional[str] = None):
-        self.base64 = base64
-        self.region = region
-        self.path = path
-
-
-class PriPageContentImage:
-    def __init__(self, id: int, type: str, pos: List[int], data: PriPageContentImageData,
+class ContentImage:
+    def __init__(self, id: int, type: str, pos: List[int], data: ImageData,
                 sub_type: Optional[str] = None,
                 stamp_type: Optional[str] = None,
                 stamp_shape: Optional[str] = None,
@@ -86,7 +78,7 @@ class PriPageContentImage:
         self.stamp_color = stamp_color
         self.size = size
 
-class PriPageContentTextLine:
+class ContentTextLine:
     def __init__(self, id: int, type: str, text: str, pos: List[int],
                 angle: Optional[int] = 0,
                 sub_type: Optional[str] = None,
@@ -107,14 +99,14 @@ class PriPageContentTextLine:
         self.char_cand = char_cand or []
         self.char_cand_score = char_cand_score or []
 
-class PriPage:
+class Page:
     def __init__(self, status: str, page_id: int, durations: float,
             image_id: Optional[str] = None, width: Optional[int] = None,
             height: Optional[int] = None, angle: Optional[int] = 0,
-            num: Optional[int] = 0, image: Optional[PriPageImageData] = None,
+            num: Optional[int] = 0, image: Optional[ImageData] = None,
             # readable: Optional[List[Union[Paragraph, TableText]]] = None,
-            content: Optional[List[Union[PriPageContentTextLine, PriPageContentImage]]] = None,
-            structured: Optional[List[Union[PriPageStructuredTable]]] = None, structured_para:Optional[List[Union[PriPageStructuredPara]]] = None):
+            content: Optional[List[Union[ContentTextLine, ContentImage]]] = None,
+            structured: Optional[List[Union[Table]]] = None, structured_para:Optional[List[Union[Paragraph]]] = None):
         self.status = status
         self.page_id = page_id
         self.durations = durations
@@ -138,7 +130,7 @@ class Metrics:
         self.paragraph_number = paragraph_number
         self.character_number = character_number
 
-class XToMarkdownOutput:
+class Document:
     def __init__(self, version: str, duration: int, result: dict, metrics: Metrics):
         self.version = version
         self.duration = duration
@@ -152,7 +144,7 @@ class CodeAndMessage:
 
 # Example of how to parse the response JSON into these structures
 
-def parse_x_to_markdown_output(data: dict) -> XToMarkdownOutput:
+def parse_x_to_markdown_output(data: dict) -> Document:
     result_data = data.get('result', {})
     metrics_data = data.get('metrics', {})
 
@@ -163,7 +155,7 @@ def parse_x_to_markdown_output(data: dict) -> XToMarkdownOutput:
         return {key: s[key] for key in allowed_keys if key in s}
 
     pages = [
-        PriPage(
+        Page(
             status=page.get('status', 'success'),
             page_id=page.get('page_id', 0),
             durations=page.get('durations', 0.0),
@@ -172,12 +164,12 @@ def parse_x_to_markdown_output(data: dict) -> XToMarkdownOutput:
             height=page.get('height'),
             angle=page.get('angle', 0),
             num=page.get('num', 0),
-            image=PriPageImageData(**page.get('image', {})),
-            content=[PriPageContentTextLine(**c) if c.get('type') == 'line' else
-                     PriPageContentImage(**c)
+            image=ImageData(**page.get('image', {})),
+            content=[ContentTextLine(**c) if c.get('type') == 'line' else
+                     ContentImage(**c)
                      for c in page.get('content', [])],
             structured=[
-                PriPageStructuredTable(**filter_table_data(s))
+                Table(**filter_table_data(s))
                 for s in page.get('structured', [])
                 if s.get('type') == 'table'
             ],
@@ -204,15 +196,13 @@ def parse_x_to_markdown_output(data: dict) -> XToMarkdownOutput:
     #    paragraph_number=metrics_data.get('paragraph_number', 0),
     #    character_number=metrics_data.get('character_number', 0)
     #)
-    print(metrics.total_page_number)
 
-    return XToMarkdownOutput(
+    return Document(
         version=data.get('version', ''),
         duration=data.get('duration', 0),
         result=result,
         metrics=metrics
     )
-
 
 def parse_code_and_message(data: dict) -> CodeAndMessage:
     return CodeAndMessage(
@@ -220,10 +210,10 @@ def parse_code_and_message(data: dict) -> CodeAndMessage:
         message=data.get('message', 'success')
     )
 
-class SimpleTextInParserEngine:
+class Pdf2MdParserEngine:
     def __init__(self):
-        # 提供默认值给 XToMarkdownOutput 的构造函数
-        self.pri_document = XToMarkdownOutput(
+        # 提供默认值给 Document 的构造函数
+        self.pri_document = Document(
             version="1.0.0",
             duration=0,
             result={},
@@ -237,8 +227,8 @@ class SimpleTextInParserEngine:
         )
 
     @staticmethod
-    def createAndStartTextInParserEngine():
-        return SimpleTextInParserEngine()
+    def create_parse_genius():
+        return Pdf2MdParserEngine()
 
     def parse(self, json_path):
         json_file_path = Path(json_path)
@@ -290,7 +280,7 @@ class SimpleTextInParserEngine:
         else:
             print(f'{indent_space}{format_value(obj)}')
 
-    def findTables(self,page_id: int) -> List[PriPageStructuredTable]:
+    def find_tables(self,page_id: int) -> List[Table]:
         page = next((p for p in self.pri_document.result['pages'] if p.page_id == page_id), None)
 
         if not page:
@@ -302,25 +292,25 @@ class SimpleTextInParserEngine:
 
         for table in page.structured:
             if isinstance(table, dict):
-                table = PriPageStructuredTable(**table)
+                table = Table(**table)
 
-            if isinstance(table, PriPageStructuredTable):
+            if isinstance(table, Table):
                 new_cells = []
                 for cell in table.cells:
                     if isinstance(cell, dict):
-                        cell = PriPageStructuredTableTableCell(**cell)
+                        cell = TableCell(**cell)
 
                     new_content = []
                     for item in cell.content:
                         if isinstance(item, dict):
                             if item.get('type') == 'textblock':
-                                item = PriPageStructuredTableTableCellTextBlock(**item)
+                                item = TextBlock(**item)
                             elif item.get('type') == 'imageblock':
-                                item = PriPageStructuredTableTableCellImageBlock(**item)
+                                item = ImageBlock(**item)
 
-                        if isinstance(item, PriPageStructuredTableTableCellTextBlock):
+                        if isinstance(item, TextBlock):
                             resolved_content = [content_map[content_id] for content_id in item.content]
-                            new_content.append(PriPageStructuredTableTableCellTextBlock(
+                            new_content.append(TextBlock(
                                 type=item.type,
                                 pos=item.pos,
                                 content=resolved_content,
@@ -328,16 +318,16 @@ class SimpleTextInParserEngine:
                                 is_continue=item.is_continue
                             ))
 
-                        elif isinstance(item, PriPageStructuredTableTableCellImageBlock):
+                        elif isinstance(item, ImageBlock):
                             resolved_content = [content_map[content_id] for content_id in item.content]
-                            new_content.append(PriPageStructuredTableTableCellImageBlock(
+                            new_content.append(ImageBlock(
                                 type=item.type,
                                 pos=item.pos,
                                 zorder=item.zorder,
                                 content=resolved_content
                             ))
 
-                    new_cell = PriPageStructuredTableTableCell(
+                    new_cell = TableCell(
                         row=cell.row,
                         col=cell.col,
                         pos=cell.pos,
@@ -347,7 +337,7 @@ class SimpleTextInParserEngine:
                     )
                     new_cells.append(new_cell)
 
-                new_table = PriPageStructuredTable(
+                new_table = Table(
                     type=table.type,
                     pos=table.pos,
                     rows=table.rows,
@@ -363,7 +353,7 @@ class SimpleTextInParserEngine:
 
         return new_tables
 
-    def getParagraph(self,page_id: int) -> List[PriPageStructuredPara]:
+    def get_paragraph(self,page_id: int) -> List[Paragraph]:
         page = next((p for p in self.pri_document.result['pages'] if p.page_id == page_id), None)
 
         if not page:
@@ -375,32 +365,32 @@ class SimpleTextInParserEngine:
         for item in page.structured_para:
             if isinstance(item, dict):
                 resolved_content = [content_map[content_id] for content_id in item["content"]]
-                para = PriPageStructuredPara(item["pos"], resolved_content)
+                para = Paragraph(item["pos"], resolved_content)
                 paragraphs.append(para)
 
         return paragraphs
 
-    def findImages(self, page_id: int) -> List[PriPageContentImage]:
+    def get_images(self, page_id: int) -> List[ContentImage]:
             page = next((p for p in self.pri_document.result['pages'] if p.page_id == page_id), None)
 
             if not page:
                 raise ValueError(f"Page with page_id {page_id} not found.")
 
-            images = [item for item in page.content if isinstance(item, PriPageContentImage)]
+            images = [item for item in page.content if isinstance(item, ContentImage)]
 
             return images
 
-    def findText(self, page_id: int) -> str:
+    def get_text(self, page_id: int) -> str:
         page = next((p for p in self.pri_document.result['pages'] if p.page_id == page_id), None)
 
         if not page:
             raise ValueError(f"Page with page_id {page_id} not found.")
 
-        combined_text = ''.join(item.text for item in page.content if isinstance(item, PriPageContentTextLine))
+        combined_text = ''.join(item.text for item in page.content if isinstance(item, ContentTextLine))
 
         return combined_text
 
-    def getMarkdown(self, page_id: int) -> str:
+    def get_markdown(self, page_id: int) -> str:
         markdown_details = self.pri_document.result['detail']
         # for item in markdown_details:
         #     print(item)
@@ -408,8 +398,38 @@ class SimpleTextInParserEngine:
         return page_markdown
 
 
-    def getOrigin(self):
+    def get_document(self):
         return self.pri_document
 
-    def getPageSize(self):
+    def get_page_size(self):
         return self.pri_document.metrics.total_page_number
+
+    def find_all_tables(self) -> List[Table]:
+        all_tables = []
+        for page in self.pri_document.result['pages']:
+            all_tables.extend(self.find_tables(page.page_id))
+        return all_tables
+
+    def get_all_images(self) -> List[ContentImage]:
+        images = []
+        for page in self.pri_document.result['pages']:
+            images.extend(self.get_images(page.page_id))
+        return images
+
+    def get_all_text(self) -> str:
+        all_text = ''
+        for page in self.pri_document.result['pages']:
+            all_text += self.get_text(page.page_id)
+        return all_text
+
+    def get_all_paragraphs(self) -> List[Paragraph]:
+        paragraphs = []
+        for page in self.pri_document.result['pages']:
+            paragraphs.extend(self.get_paragraph(page.page_id))
+        return paragraphs
+
+    def get_all_markdown(self) -> str:
+        markdown_details = self.pri_document.result['detail']
+        all_markdown = ''.join(item["text"] for item in markdown_details)
+        return all_markdown
+
