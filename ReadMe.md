@@ -54,7 +54,7 @@ for page_id in range(total_pages):
 
 # High-Level访问
 通过使用`ParseGenius`解析json，开发者可以使用API访问版面元素，相比于`Lower-Level`的方式，API提供了更强大的封装能力以及定制化访问策略。
-
+所有的API都是通过`ParseGenius.Pdf2MdParserEngine`对象透出，可以使用`Pdf2MdParserEngine.create_parse_genius`创建一个`Pdf2MdParserEngine`对象
 
 ### 1. `find_tables(page_id: int)`
 获取指定页面中的所有表格。
