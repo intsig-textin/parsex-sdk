@@ -11,7 +11,7 @@ import ParseGenius
 初始化解析器：
 ```python
 # 初始化解析器
-parser = Pdf2MdParserEngine.create_parse_genius()
+parser = ParseGenius.Pdf2MdParserEngine.create_parse_genius()
 # json文件路径
 json_path = 'example.json'
 # 调用解析方法
