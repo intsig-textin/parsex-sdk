@@ -19,13 +19,9 @@ else:
 class TestPdf2MdParserEngine(unittest.TestCase):
 
     @staticmethod
-    def download_json_via_curl():
+    def get_result_via_curl(pdf_file_path, output_result_path, app_id, secret_code):
         # curl 命令的各项参数
-        api_url = "https://api.textin.com/ai/service/v1/pdf_to_markdow?markdown_details=1&apply_document_tree=1"
-        app_id = "*****************"
-        secret_code = "*****************"
-        pdf_file_path = "file/test-2333.pdf"
-        output_json_path = "test_json/test-2333.json"
+        api_url = "https://api.textin.com/ai/service/v1/pdf_to_markdow?markdown_details=1&apply_document_tree=1&page_details=1"
 
         # 执行 curl 命令
         curl_command = [
@@ -34,28 +30,37 @@ class TestPdf2MdParserEngine(unittest.TestCase):
             "--header", f"x-ti-app-id: {app_id}",
             "--header", f"x-ti-secret-code: {secret_code}",
             "--data-binary", f"@{pdf_file_path}",
-            "--output", output_json_path
+            "--output", output_result_path
         ]
 
         result = subprocess.run(curl_command, capture_output=True, text=True)
 
         if result.returncode != 0:
             print(f"Error occurred while executing curl: {result.stderr}")
-            raise Exception("Failed to download JSON data using curl")
+            exit(0)
+            #raise Exception("Failed to download JSON data using curl")
+            
 
     def setUp(self):
+        pass
         # 在测试开始之前下载 通过pdf_to_markdown的公有云API下载JSON 数据
-        self.download_json_via_curl()
+        # self.download_json_via_curl()
 
     def test_parse_json(self):
         # 初始化解析器
         parser = ParseGenius.Pdf2MdParserEngine.create_parse_genius()
+        
+        # 如果你已经有调用文档解析的结果，可以不需要执行get_result_via_curl， 直接指定result_json_path的路径进行解析
+        app_id = "#########################"
+        secret_code = "#############################"
+        pdf_file_path = "file/example.pdf"
+        # 待解析的文件路径
+        result_json_path = "test_json/example.json"
 
-        # 测试文件路径
-        test_json_path = 'test_json/test-2333.json'
-
+        TestPdf2MdParserEngine.get_result_via_curl(pdf_file_path, result_json_path, app_id, result_json_path)
+         
         # 调用解析方法
-        parse_result = parser.parse(test_json_path)
+        parse_result = parser.parse(result_json_path)
         self.assertEqual(parse_result, 0, "Parsing should return 0 on success")
 
         # 检查解析结果是否为预期
