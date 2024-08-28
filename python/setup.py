@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='ParseGenius',
-    version='0.1.1',
+    version='0.1.2',
     author='doughboii',
     description='A text-in parser engine for pdf to markdown processing',
     long_description=open('README.md').read(),
@@ -10,6 +10,8 @@ setup(
     url='https://github.com/intsig/x2md_tools/python/ParseGenius_engine',
     packages=find_packages(),
     install_requires=[
+        'opencv-python-headless',
+        'numpy',
     ],
     classifiers=[
         'Programming Language :: Python :: 3',

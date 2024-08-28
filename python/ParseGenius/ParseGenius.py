@@ -1,3 +1,7 @@
+import cv2
+print(cv2.__version__)
+import numpy as np
+import base64
 import json
 from typing import List, Dict, Union, Optional
 from pathlib import Path
@@ -60,6 +64,17 @@ class ImageData:
         self.base64 = base64
         self.region = region
         self.path = path
+
+    def to_cv_mat(self) -> np.ndarray:
+        if self.base64:
+            # from base64 decode
+            image_data = np.frombuffer(base64.b64decode(self.base64), dtype=np.uint8)
+            image = cv2.imdecode(image_data, cv2.IMREAD_COLOR)
+            if image is None:
+                raise ValueError("Cannot decode image from base64")
+            return image
+        else:
+            raise ValueError("No valid image data found.")
 
 class ContentImage:
     def __init__(self, id: int, type: str, pos: List[int], data: ImageData,
@@ -163,9 +178,12 @@ def parse_x_to_markdown_output(data: dict) -> Document:
             height=page.get('height'),
             angle=page.get('angle', 0),
             num=page.get('num', 0),
-            image=ImageData(**page.get('image', {})),
+            image=ImageData(**page.get('image', {})) if 'image' in page else None,
             content=[ContentTextLine(**c) if c.get('type') == 'line' else
-                     ContentImage(**c)
+                     ContentImage(id=c.get('id'), type=c.get('type'), pos=c.get('pos'),
+                                  data=ImageData(**c['data']), sub_type=c.get('sub_type'),
+                                  stamp_type=c.get('stamp_type'), stamp_shape=c.get('stamp_shape'),
+                                  stamp_color=c.get('stamp_color'), size=c.get('size'))
                      for c in page.get('content', [])],
             structured=[
                 Table(**filter_table_data(s))
@@ -176,9 +194,6 @@ def parse_x_to_markdown_output(data: dict) -> Document:
         )
         for page in result_data.get('pages', [])
     ]
-    #for page in pages:
-        #print(page.structured)
-        #exit(0)
     detail = result_data['detail']
     result = {
         'src_page_count': result_data.get('src_page_count', 0),
@@ -200,6 +215,7 @@ def parse_x_to_markdown_output(data: dict) -> Document:
         result=result,
         metrics=metrics
     )
+
 
 def parse_code_and_message(data: dict) -> CodeAndMessage:
     return CodeAndMessage(
@@ -367,14 +383,36 @@ class Pdf2MdParserEngine:
         return paragraphs
 
     def get_images(self, page_id: int) -> List[ContentImage]:
-            page = next((p for p in self.pri_document.result['pages'] if p.page_id == page_id), None)
+        page = next((p for p in self.pri_document.result['pages'] if p.page_id == page_id), None)
 
-            if not page:
-                raise ValueError(f"Page with page_id {page_id} not found.")
+        if not page:
+            raise ValueError(f"Page with page_id {page_id} not found.")
 
-            images = [item for item in page.content if isinstance(item, ContentImage)]
+        images = [item for item in page.content if isinstance(item, ContentImage)]
 
-            return images
+        return images
+
+    def get_images_cv_mat(self, page_id: int) -> List[np.ndarray]:
+        """
+        获取指定页面的所有图片的cv::Mat结构
+        """
+        images = self.get_images(page_id)
+        cv_mats = [image.data.to_cv_mat() for image in images]
+        return cv_mats
+
+    def get_all_images(self) -> List[ContentImage]:
+        images = []
+        for page in self.pri_document.result['pages']:
+            images.extend(self.get_images(page.page_id))
+        return images
+
+    def get_all_images_cv_mat(self) -> List[np.ndarray]:
+        """
+        获取整个文档的所有图片的cv::Mat结构
+        """
+        images = self.get_all_images()
+        cv_mats = [image.data.to_cv_mat() for image in images]
+        return cv_mats
 
     def get_text(self, page_id: int) -> str:
         page = next((p for p in self.pri_document.result['pages'] if p.page_id == page_id), None)
@@ -388,8 +426,6 @@ class Pdf2MdParserEngine:
 
     def get_markdown(self, page_id: int) -> str:
         markdown_details = self.pri_document.result['detail']
-        # for item in markdown_details:
-        #     print(item)
         page_markdown = ''.join(item["text"] for item in markdown_details if item["page_id"] == page_id)
         return page_markdown
 
@@ -405,12 +441,6 @@ class Pdf2MdParserEngine:
         for page in self.pri_document.result['pages']:
             all_tables.extend(self.find_tables(page.page_id))
         return all_tables
-
-    def get_all_images(self) -> List[ContentImage]:
-        images = []
-        for page in self.pri_document.result['pages']:
-            images.extend(self.get_images(page.page_id))
-        return images
 
     def get_all_text(self) -> str:
         all_text = ''

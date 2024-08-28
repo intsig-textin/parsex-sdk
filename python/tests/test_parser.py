@@ -39,7 +39,7 @@ class TestPdf2MdParserEngine(unittest.TestCase):
             print(f"Error occurred while executing curl: {result.stderr}")
             exit(0)
             #raise Exception("Failed to download JSON data using curl")
-            
+
 
     def setUp(self):
         pass
@@ -49,7 +49,7 @@ class TestPdf2MdParserEngine(unittest.TestCase):
     def test_parse_json(self):
         # 初始化解析器
         parser = ParseGenius.Pdf2MdParserEngine.create_parse_genius()
-        
+
         # 如果你已经有调用文档解析的结果，可以不需要执行get_result_via_curl， 直接指定result_json_path的路径进行解析
         app_id = "#########################"
         secret_code = "#############################"
@@ -57,8 +57,8 @@ class TestPdf2MdParserEngine(unittest.TestCase):
         # 待解析的文件路径
         result_json_path = "test_json/example.json"
 
-        TestPdf2MdParserEngine.get_result_via_curl(pdf_file_path, result_json_path, app_id, result_json_path)
-         
+        # TestPdf2MdParserEngine.get_result_via_curl(pdf_file_path, result_json_path, app_id, secret_code)
+
         # 调用解析方法
         parse_result = parser.parse(result_json_path)
         self.assertEqual(parse_result, 0, "Parsing should return 0 on success")
@@ -93,6 +93,13 @@ class TestPdf2MdParserEngine(unittest.TestCase):
                 print(f"Image {index + 1}:")
                 parser.print_all_elements(image)  # 限定只能打印前50(默认)个字符
                 print("\n")
+
+            # 获取当前页面的图片的 cv::Mat 数组
+            images_cv_mat = parser.get_images_cv_mat(page_id)
+            print(f"Total images (as cv::Mat) in page {page_id + 1}: {len(images_cv_mat)}")
+            for idx, mat in enumerate(images_cv_mat):
+                print(f"Image {idx + 1} (cv::Mat) shape: {mat.shape}")
+            print("\n")
 
             # 获取当前页面的文本信息
             text = parser.get_text(page_id)
@@ -154,6 +161,13 @@ class TestPdf2MdParserEngine(unittest.TestCase):
             print(f"Image {index + 1}:")
             parser.print_all_elements(image)
             print("\n")
+
+        # 测试获取整个文档中的所有图片的 cv::Mat 数组
+        all_images_cv_mat = parser.get_all_images_cv_mat()
+        print(f"Total images (as cv::Mat) in document: {len(all_images_cv_mat)}")
+        for idx, mat in enumerate(all_images_cv_mat):
+            print(f"Image {idx + 1} (cv::Mat) shape: {mat.shape}")
+        print("\n")
 
         # 测试获取整个文档中的所有文本
         all_text = parser.get_all_text()

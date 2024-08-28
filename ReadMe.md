@@ -166,6 +166,15 @@ for page_id in range(total_pages):
 #### 说明:
 - 该方法用于获取整个文档的原始数据结构，便于进一步的操作或分析。
 
+### 6. `get_images_cv_mat()`
+获取指定页面的所有图像的 Cv::Mat 内容。
+
+#### 返回值:
+- `List[np.ndarray]`: 返回一个包含所有图像Cv::Mat的列表。
+
+#### 说明:
+- 该方法从文档结果中的详情部分提取出与指定 `page_id` 相关的图片 Cv::Mat 内容。
+
 ### 7. `total get_all*()/find_all*()`
 所有带有以上前缀的API都为获取整个document的版面元素集合
 
