@@ -21,7 +21,7 @@ class TestPdf2MdParserEngine(unittest.TestCase):
     @staticmethod
     def get_result_via_curl(pdf_file_path, output_result_path, app_id, secret_code):
         # curl 命令的各项参数
-        api_url = "https://api.textin.com/ai/service/v1/pdf_to_markdow?markdown_details=1&apply_document_tree=1&page_details=1&markdown_details=1"
+        api_url = "https://api.textin.com/ai/service/v1/pdf_to_markdow?markdown_details=1&apply_document_tree=1&page_details=1"
 
         # 执行 curl 命令
         curl_command = [
