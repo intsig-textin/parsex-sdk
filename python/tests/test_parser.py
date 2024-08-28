@@ -1,6 +1,7 @@
 import unittest
 import sys
 import json
+import subprocess
 from pathlib import Path
 
 # 加载配置
@@ -16,6 +17,36 @@ else:
     import ParseGenius
 
 class TestPdf2MdParserEngine(unittest.TestCase):
+
+    @staticmethod
+    def download_json_via_curl():
+        # curl 命令的各项参数
+        api_url = "https://api.textin.com/ai/service/v1/pdf_to_markdow?markdown_details=1&apply_document_tree=1"
+        app_id = "*****************"
+        secret_code = "*****************"
+        pdf_file_path = "file/test-2333.pdf"
+        output_json_path = "test_json/test-2333.json"
+
+        # 执行 curl 命令
+        curl_command = [
+            "curl",
+            "--location", "--request", "POST", api_url,
+            "--header", f"x-ti-app-id: {app_id}",
+            "--header", f"x-ti-secret-code: {secret_code}",
+            "--data-binary", f"@{pdf_file_path}",
+            "--output", output_json_path
+        ]
+
+        result = subprocess.run(curl_command, capture_output=True, text=True)
+
+        if result.returncode != 0:
+            print(f"Error occurred while executing curl: {result.stderr}")
+            raise Exception("Failed to download JSON data using curl")
+
+    def setUp(self):
+        # 在测试开始之前下载 通过pdf_to_markdown的公有云API下载JSON 数据
+        self.download_json_via_curl()
+
     def test_parse_json(self):
         # 初始化解析器
         parser = ParseGenius.Pdf2MdParserEngine.create_parse_genius()
