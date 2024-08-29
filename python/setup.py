@@ -1,9 +1,9 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='ParseGenius',
-    version='0.1.2',
-    author='doughboii',
+    name='TextInParseX',
+    version='0.0.4',
+    author='bin_zhang',
     description='A text-in parser engine for pdf to markdown processing',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
@@ -12,6 +12,7 @@ setup(
     install_requires=[
         'opencv-python-headless',
         'numpy',
+        'requests'
     ],
     classifiers=[
         'Programming Language :: Python :: 3',
