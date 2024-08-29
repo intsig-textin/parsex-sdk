@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import base64
 import json
+import requests
 from typing import List, Union, Optional
 from pathlib import Path
 
@@ -109,7 +110,8 @@ class Page:
         self.structured = structured or []
         self.structured_para = structured_para or []
 
-    def get_tables(self) -> List[Table]:
+    @property
+    def tables(self) -> List[Table]:
         content_map = {c.id: c for c in self.content}
         new_tables = []
         for table in self.structured:
@@ -173,7 +175,8 @@ class Page:
                 new_tables.append(new_table)
         return new_tables
 
-    def get_paragraphs(self) -> List[Paragraph]:
+    @property
+    def paragraphs(self) -> List[Paragraph]:
         content_map = {c.id: c for c in self.content}
         paragraphs = []
         for item in self.structured_para:
@@ -183,13 +186,15 @@ class Page:
                 paragraphs.append(para)
         return paragraphs
 
-    def get_images(self) -> List[ContentImage]:
+    @property
+    def images(self) -> List[ContentImage]:
         return [item for item in self.content if isinstance(item, ContentImage)]
 
     def get_images_cv_mat(self) -> List[np.ndarray]:
-        return [image.data.to_cv_mat() for image in self.get_images()]
+        return [image.data.to_cv_mat() for image in self.images]
 
-    def get_text(self) -> str:
+    @property
+    def paragraph_text(self) -> str:
         return ''.join(item.text for item in self.content if isinstance(item, ContentTextLine))
 
 class Metrics:
@@ -206,37 +211,44 @@ class Document:
         self.result = result
         self.metrics = metrics
 
-    def get_all_images(self) -> List[ContentImage]:
+    @property
+    def pages(self):
+        return self.result["pages"]
+
+    @property
+    def all_images(self) -> List[ContentImage]:
         images = []
-        for page in self.result['pages']:
-            images.extend(page.get_images())
+        for page in self.pages:
+            images.extend(page.images)
         return images
 
     def get_all_images_cv_mat(self) -> List[np.ndarray]:
-        images = self.get_all_images()
+        images = self.all_images
         return [image.data.to_cv_mat() for image in images]
 
-    def get_all_text(self) -> str:
-        return ''.join(page.get_text() for page in self.result['pages'])
+    @property
+    def all_text(self) -> str:
+        return ''.join(page.paragraph_text for page in self.pages)
 
-    def get_all_tables(self) -> List[Table]:
+    @property
+    def all_tables(self) -> List[Table]:
         all_tables = []
-        for page in self.result['pages']:
-            all_tables.extend(page.get_tables())
+        for page in self.pages:
+            all_tables.extend(page.tables)
         return all_tables
 
-    def get_all_paragraphs(self) -> List[Paragraph]:
+    @property
+    def all_paragraphs(self) -> List[Paragraph]:
         paragraphs = []
-        for page in self.result['pages']:
-            paragraphs.extend(page.get_paragraphs())
+        for page in self.pages:
+            paragraphs.extend(page.paragraphs)
         return paragraphs
 
-    def get_all_markdown(self) -> str:
-        markdown_details = self.result['detail']
-        all_markdown = ''.join(item["text"] for item in markdown_details)
-        return all_markdown
+    @property
+    def all_markdown(self):
+        return self.result["markdown"]
 
-class Pdf2MdParserEngine:
+class ParseXClient:
     def __init__(self):
         self.pri_document = Document(
             version="1.0.0",
@@ -249,12 +261,60 @@ class Pdf2MdParserEngine:
                 character_number=0
             )
         )
+        self.result = {}  
+    
+    def __init__(self, app_id=None, secret_code=None):
+        self.app_id = app_id
+        self.secret_code = secret_code
+        self.result = {}
+        self.pri_document = Document(
+            version="1.0.0",
+            duration=0,
+            result={},
+            metrics=Metrics(
+                document_type="unknown",
+                valid_page_number=0,
+                paragraph_number=0,
+                character_number=0
+            )
+        )    
+    
+    def begin_analyze_document_from_url(self, file_path,
+                                        api_url = "https://api.textin.com/ai/service/v1/pdf_to_markdow?markdown_details=1&apply_document_tree=1&page_details=1", 
+                                        ):
+        # curl 命令的各项参数
+        
+        headers = { 'x-ti-app-id': self.app_id,
+                    'x-ti-secret-code': self.secret_code
+                  }
+        with open(file_path, 'rb') as fr:
+            image_data = fr.read()
+        try:
+            response = requests.post(api_url, data=image_data)
+        except ConnectionError as e:
+            print(f"{e}-{api_url}", flush=True)
+            exit(0)
+        except Exception as e:
+            print(f"{e}-{api_url}", flush=True)
+            exit(0)
+        
+        result = response.json()
+        try:
+            if result["code"] != 200:
+                print(f"illegal result", flush=True)
+        except Exception as e:
+            print(f"{e}-{result}", flush=True)
+            exit(0)        
+        
+        self.result = result
+        self.pri_document = parse_x_to_markdown_output(self.result)
+        return self.pri_document
+    
+    def begin_analyze_document_from_json(self, json_object):
+        self.pri_document = parse_x_to_markdown_output(json_object)
+        return self.pri_document
 
-    @staticmethod
-    def create_parse_genius():
-        return Pdf2MdParserEngine()
-
-    def parse(self, json_path):
+    def begin_analyze_document_from_file(self, json_path):
         json_file_path = Path(json_path)
         with json_file_path.open('r', encoding='utf-8') as f:
             try:
@@ -264,17 +324,9 @@ class Pdf2MdParserEngine:
                 return -1
         print('start to prase_x_to_markdown_output')
         self.pri_document = parse_x_to_markdown_output(data)
-        return 0
-
-    def get_document(self):
+        self.page_num = len(self.pri_document.pages)
         return self.pri_document
-
-    def get_page_size(self):
-        return len(self.pri_document.result['pages'])
-
-    def get_all_markdown(self) -> str:
-        return self.pri_document.get_all_markdown()
-
+    
     def print_all_elements(self, obj, indent=0, max_str_length=50):
             indent_space = '  ' * indent
 
@@ -317,6 +369,8 @@ class Pdf2MdParserEngine:
 def parse_x_to_markdown_output(data: dict) -> Document:
     result_data = data.get('result', {})
     metrics_data = data.get('metrics', {})
+    details_data = result_data.get('detail', {})
+    markdown = result_data.get('markdown', {})
 
     # 处理 pages 数据
     pages = [
@@ -366,7 +420,7 @@ def parse_x_to_markdown_output(data: dict) -> Document:
     return Document(
         version=data.get('version', ''),
         duration=data.get('duration', 0),
-        result={"pages": pages},  # 确保 `result` 中的 `pages` 是 `Page` 对象列表
+        result={"pages": pages, 'details':details_data, "markdown":markdown},  # 确保 `result` 中的 `pages` 是 `Page` 对象列表
         metrics=metrics
     )
 
