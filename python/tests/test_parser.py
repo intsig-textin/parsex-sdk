@@ -38,13 +38,9 @@ class TestPdf2MdParserEngine(unittest.TestCase):
         if result.returncode != 0:
             print(f"Error occurred while executing curl: {result.stderr}")
             exit(0)
-            #raise Exception("Failed to download JSON data using curl")
-
 
     def setUp(self):
         pass
-        # 在测试开始之前下载 通过pdf_to_markdown的公有云API下载JSON 数据
-        # self.download_json_via_curl()
 
     def test_parse_json(self):
         # 初始化解析器
@@ -54,7 +50,6 @@ class TestPdf2MdParserEngine(unittest.TestCase):
         app_id = "#########################"
         secret_code = "#############################"
         pdf_file_path = "file/example.pdf"
-        # 待解析的文件路径
         result_json_path = "test_json/example.json"
 
         # TestPdf2MdParserEngine.get_result_via_curl(pdf_file_path, result_json_path, app_id, secret_code)
@@ -72,21 +67,20 @@ class TestPdf2MdParserEngine(unittest.TestCase):
         print("\n")
 
         # 遍历每一页
-        for page_id in range(total_pages):
-            print(f"=== Page {page_id + 1} ===")
+        for page in parser.pri_document.result['pages']:
+            print(f"=== Page {page.page_id + 1} ===")
             print("\n")
 
             # 获取当前页面的表格数组
-            tables = parser.find_tables(page_id)
+            tables = page.get_tables()
 
             # 循环打印每个表格对象
             for index, table in enumerate(tables):
                 print(f"Table {index + 1}:")
                 parser.print_all_elements(table)
                 print("\n")
-
             # 获取当前页面的图片数组
-            images = parser.get_images(page_id)
+            images = page.get_images()
 
             # 循环打印每个图片对象
             for index, image in enumerate(images):
@@ -95,28 +89,20 @@ class TestPdf2MdParserEngine(unittest.TestCase):
                 print("\n")
 
             # 获取当前页面的图片的 cv::Mat 数组
-            images_cv_mat = parser.get_images_cv_mat(page_id)
-            print(f"Total images (as cv::Mat) in page {page_id + 1}: {len(images_cv_mat)}")
+            images_cv_mat = page.get_images_cv_mat()
+            print(f"Total images (as cv::Mat) in page {page.page_id + 1}: {len(images_cv_mat)}")
             for idx, mat in enumerate(images_cv_mat):
                 print(f"Image {idx + 1} (cv::Mat) shape: {mat.shape}")
             print("\n")
 
             # 获取当前页面的文本信息
-            text = parser.get_text(page_id)
+            text = page.get_text()
             print("Text:")
             parser.print_all_elements(text, 0, 1000)  # 限定只能打印前1000个字符
             print("\n")
 
-            # 获取当前页面的markdown
-            markdown_details = parser.get_markdown(page_id)
-            print('Markdown details:')
-            print(markdown_details)
-            print("\n")
-
-            print('Start to get paragraphs')
-
             # 获取段落
-            paragraphs = parser.get_paragraph(page_id)
+            paragraphs = page.get_paragraphs()
             print(f"Total paragraphs: {len(paragraphs)}")
 
             for p_idx, each_paragraph in enumerate(paragraphs):
@@ -131,7 +117,7 @@ class TestPdf2MdParserEngine(unittest.TestCase):
             print("\n\n")
 
         # 测试获取整个文档中的所有表格
-        all_tables = parser.find_all_tables()
+        all_tables = parser.pri_document.get_all_tables()
         print(f"Total tables in document: {len(all_tables)}")
         self.assertGreater(len(all_tables), 0, "There should be at least one table in the document")
         for index, table in enumerate(all_tables):
@@ -140,7 +126,7 @@ class TestPdf2MdParserEngine(unittest.TestCase):
             print("\n")
 
         # 测试获取整个文档中的所有段落
-        all_paragraphs = parser.get_all_paragraphs()
+        all_paragraphs = parser.pri_document.get_all_paragraphs()
         print(f"Total paragraphs in document: {len(all_paragraphs)}")
         self.assertGreater(len(all_paragraphs), 0, "There should be at least one paragraph in the document")
         for p_idx, each_paragraph in enumerate(all_paragraphs):
@@ -154,7 +140,7 @@ class TestPdf2MdParserEngine(unittest.TestCase):
         print("\n\n")
 
         # 测试获取整个文档中的所有图片
-        all_images = parser.get_all_images()
+        all_images = parser.pri_document.get_all_images()
         print(f"Total images in document: {len(all_images)}")
         self.assertGreater(len(all_images), 0, "There should be at least one image in the document")
         for index, image in enumerate(all_images):
@@ -163,24 +149,28 @@ class TestPdf2MdParserEngine(unittest.TestCase):
             print("\n")
 
         # 测试获取整个文档中的所有图片的 cv::Mat 数组
-        all_images_cv_mat = parser.get_all_images_cv_mat()
+        all_images_cv_mat = parser.pri_document.get_all_images_cv_mat()
         print(f"Total images (as cv::Mat) in document: {len(all_images_cv_mat)}")
         for idx, mat in enumerate(all_images_cv_mat):
             print(f"Image {idx + 1} (cv::Mat) shape: {mat.shape}")
         print("\n")
 
         # 测试获取整个文档中的所有文本
-        all_text = parser.get_all_text()
+        all_text = parser.pri_document.get_all_text()
         print("All text in document:")
         self.assertGreater(len(all_text), 0, "There should be some text in the document")
         parser.print_all_elements(all_text, 0, 1000)
         print("\n")
 
         # 测试获取整个文档中的所有 Markdown 内容
-        all_markdown = parser.get_all_markdown()
-        print("All markdown content in document:")
-        self.assertGreater(len(all_markdown), 0, "There should be some markdown content in the document")
-        print(all_markdown)
+        markdown_details = parser.pri_document.result.get('detail', [])
+        if markdown_details:
+            page_markdown = page.get_markdown(markdown_details)
+            print('Markdown details:')
+            print(page_markdown)
+        else:
+            print("No markdown details found.")
+        print("\n")
 
 
 if __name__ == '__main__':
