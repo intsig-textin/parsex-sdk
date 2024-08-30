@@ -20,17 +20,17 @@ class TestPdf2MdParserEngine(unittest.TestCase):
     def setUp(self):
         pass
 
-    def test_parse_json(self):
+    def test_parseX(self):
         # 如果你已经有调用文档解析的结果，可以不需要执行get_result_via_curl， 直接指定result_json_path的路径进行解析
         app_id = "#########################"
         secret_code = "#############################"
         
         pdf_file_path = "file/example.pdf"
-        #api_url = 'https://api.textin.com/ai/service/v1/pdf_to_markdow?markdown_details=1&apply_document_tree=1&page_details=1'
+        #api_url = 'https://api.textin.com/ai/service/v1/pdf_to_markdown?markdown_details=1&apply_document_tree=1&page_details=1'
 
         # 初始化解析器
         parseX_client = px.ParseXClient(app_id, secret_code)
-        result = parseX_client.begin_analyze_document_from_url(pdf_file_path)
+        #result = parseX_client.begin_analyze_document_from_url(pdf_file_path)
 
         json_file = 'test_json/example.json'
         with open(json_file, 'r') as fr:
@@ -82,9 +82,9 @@ class TestPdf2MdParserEngine(unittest.TestCase):
 
         # 遍历每一页
         for page in result.pages:
-            print(f"=== Page {page.page_id + 1} ===")
+            print(f"=== Page {page.page_id + 1} === Page width {page.width} Page height {page.height}")
             print("\n")
-    
+
         for index, table in enumerate(page.tables):
             print(f"Table {index + 1}:")
             parseX_client.print_all_elements(table)
