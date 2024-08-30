@@ -16,69 +16,72 @@ import TextInParseX as px
 
 # 初始化解析器
 ```
+import TextInParseX as px
+
+# 初始化解析器
 app_id = "#############################"     #填入你的textin的api_id和secret——code
 secret_code = "#############################"
 
-parser_client = px.ParseGeniousClient(app_id, secret_code)
+parseX_client = px.ParseXClient(app_id, secret_code)
 
 pdf_file_path = "example.pdf" #你的本地文件路径
 
 #通过ParseGenious直接调用url获取解析对象
-result = parser_client.begin_analyze_document_from_url(pdf_file_path)
+result = parseX_client.begin_analyze_document_from_url(pdf_file_path)
+
+```
 
 也可以参考textin.com的restful api调用，通过python，curl，或者postman工具获得api的原始json文件，再通过ParseX解析json文件获得解析对象。
-import ParseX as px
+
+```
+import TextInParseX as px
 import json
 
 json_file = 'test_json/example.json'
 with open(json_file, 'r') as fr:
     json_result = json.load(fr)
     
-parser_client = px.ParseXClient()
-result = parser_client.begin_analyze_document_from_json(json_result)
+parseX_client = px.ParseXClient()
+result = parseX_client.begin_analyze_document_from_json(json_result)
+
 #或者直接输入json文件
-result = begin_analyze_document_from_file(json_file)
+result = parseX_client.begin_analyze_document_from_file(json_file)
 ```
 
-
 获得文档的markdown 信息，所有文本、表格、段落，图片信息
-
 ```
 print('Markdown:')
 print(result.all_markdown)
 print("\n")
 
 print("All text in document:")
-parser_client.print_all_elements(result.all_text, 0, 1000)
+parseX_client.print_all_elements(result.all_text, 0, 1000)
 print("\n")
-
-
 print(f"Total tables in document: {len(result.all_tables)}")
-        
 for index, table in enumerate(result.all_tables):
     print(f"Table {index + 1}:")
-    parser_client.print_all_elements(table)
+    parseX_client.print_all_elements(table)
     print("\n")
-
+    
 print(f"Total paragraphs in document: {len(result.all_paragraphs)}")
 for p_idx, each_paragraph in enumerate(result.all_paragraphs):
     print(f"\n--- Paragraph {p_idx + 1}/{len(result.all_paragraphs)} ---")
     print(f"Paragraph position: {each_paragraph.pos}")
     for l_idx, each_line in enumerate(each_paragraph.lines):
         print(f"  Line {l_idx + 1}/{len(each_paragraph.lines)}")
-        print(f"    line positions: {each_line.pos}")
+        print(f"    Line positions: {each_line.pos}")
         print(f"  Line text: {each_line.text}")
     
 print(f"Total images in document: {len(result.all_images)}")
 for index, image in enumerate(result.all_images):
     print(f"Image {index + 1}:")
-    parser_client.print_all_elements(image)
+    parseX_client.print_all_elements(image)
     print("\n")
 
 all_images_cv_mat = result.get_all_images_cv_mat()
 print(f"Total images (as cv::Mat) in document: {len(all_images_cv_mat)}")
 for idx, mat in enumerate(all_images_cv_mat):
-print("\n")
+    print(f"Image {idx + 1} (cv::Mat) shape: {mat.shape}")
 ```
 
 分别获取每页的表格信息、图片信息，段落纯文本信息，段落坐标，每行的信息
@@ -90,12 +93,12 @@ for page in result.pages:
     
     for index, table in enumerate(page.tables):
         print(f"Table {index + 1}:")
-        parser_client.print_all_elements(table)
+        parseX_client.print_all_elements(table)
         print("\n")
 
     for index, image in enumerate(page.images):
         print(f"Image {index + 1}:")
-        parser_client.print_all_elements(image)  # 限定只能打印前50(默认)个字符
+        parseX_client.print_all_elements(image)  # 限定只能打印前50(默认)个字符
         print("\n")
     
     images_cv_mat = page.get_images_cv_mat()
@@ -105,7 +108,7 @@ for page in result.pages:
     print("\n")
    
     print("Text:")
-    parser_client.print_all_elements(page.paragraph_text, 0, 1000)  # 限定只能打印前1000个字符
+    parseX_client.print_all_elements(page.paragraph_text, 0, 1000)  # 限定只能打印前1000个字符
     print("\n")
     # 获取当前页的段落
     
@@ -115,7 +118,7 @@ for page in result.pages:
         print(f"Paragraph position: {each_paragraph.pos}")
         for l_idx, each_line in enumerate(each_paragraph.lines):
             print(f"  Line {l_idx + 1}/{len(each_paragraph.lines)}")
-            print(f"    line positions: {each_line.pos}")
+            print(f"    Line positions: {each_line.pos}")
             print(f"  Line text: {each_line.text}")
     print('Finished getting paragraphs')
     print("\n\n")
