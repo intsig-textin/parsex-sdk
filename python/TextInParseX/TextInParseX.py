@@ -280,17 +280,17 @@ class ParseXClient:
         )    
     
     def begin_analyze_document_from_url(self, file_path,
-                                        api_url = "https://api.textin.com/ai/service/v1/pdf_to_markdow?markdown_details=1&apply_document_tree=1&page_details=1", 
+                                        api_url = "https://api.textin.com/ai/service/v1/pdf_to_markdown?markdown_details=1&apply_document_tree=1&page_details=1", 
                                         ):
         # curl 命令的各项参数
-        
         headers = { 'x-ti-app-id': self.app_id,
                     'x-ti-secret-code': self.secret_code
                   }
         with open(file_path, 'rb') as fr:
             image_data = fr.read()
+        
         try:
-            response = requests.post(api_url, data=image_data)
+            response = requests.post(api_url, data=image_data, headers=headers, timeout=180)
         except ConnectionError as e:
             print(f"{e}-{api_url}", flush=True)
             exit(0)
@@ -298,13 +298,18 @@ class ParseXClient:
             print(f"{e}-{api_url}", flush=True)
             exit(0)
         
-        result = response.json()
         try:
-            if result["code"] != 200:
-                print(f"illegal result", flush=True)
+            result = response.json()
         except Exception as e:
-            print(f"{e}-{result}", flush=True)
-            exit(0)        
+            print(f"{e}", flush=True)
+            
+        if result["code"] != 200:
+            print(f"illegal result", flush=True)
+            exit(0)
+        
+        if result["version"] != "3.6.2":
+            print(f"illegal api version {result['version']}")
+            exit(0)
         
         self.result = result
         self.pri_document = parse_x_to_markdown_output(self.result)
