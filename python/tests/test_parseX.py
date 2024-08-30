@@ -69,8 +69,7 @@ class TestPdf2MdParserEngine(unittest.TestCase):
             for idx, mat in enumerate(images_cv_mat):
                 print(f"Image {idx + 1} (cv::Mat) shape: {mat.shape}")
             print("\n")
-
-           
+            
             # 打印当前页面的文本信息
             print("Text:")
             parser_client.print_all_elements(page.paragraph_text, 0, 1000)  # 限定只能打印前1000个字符
@@ -85,7 +84,8 @@ class TestPdf2MdParserEngine(unittest.TestCase):
 
                 for l_idx, each_line in enumerate(each_paragraph.lines):
                     print(f"  Line {l_idx + 1}/{len(each_paragraph.lines)}")
-                    print(f"    Character positions: {each_line.char_pos}")
+                    print(f"    Line positions: {each_line.pos}")
+                    print(f"  Line text: {each_line.text}")
 
             print('Finished getting paragraphs')
             print("\n\n")
@@ -94,6 +94,7 @@ class TestPdf2MdParserEngine(unittest.TestCase):
         all_tables = result.all_tables
         print(f"Total tables in document: {len(all_tables)}")
         self.assertGreater(len(all_tables), 0, "There should be at least one table in the document")
+        
         for index, table in enumerate(all_tables):
             print(f"Table {index + 1}:")
             parser_client.print_all_elements(table)
@@ -108,7 +109,7 @@ class TestPdf2MdParserEngine(unittest.TestCase):
             print(f"Paragraph position: {each_paragraph.pos}")
             for l_idx, each_line in enumerate(each_paragraph.lines):
                 print(f"  Line {l_idx + 1}/{len(each_paragraph.lines)}")
-                print(f"    Character positions: {each_line.char_pos}")
+                print(f"    Line positions: {each_line.pos}")
 
         print('Finished getting all paragraphs')
         print("\n\n")
