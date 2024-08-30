@@ -11,10 +11,10 @@ if config.get("use_local_source"):
     # 使用本地的源码，方便本地修改调试ParserX
     parent_dir = Path(__file__).resolve().parent.parent
     sys.path.insert(0, str(parent_dir))
-    import ParseX.ParseX as px
+    import TextInParseX.TextInParseX as px
 else:
     # 使用pip包的ParseGenius
-    import ParseX as px
+    import TextInParseX as px
 
 class TestPdf2MdParserEngine(unittest.TestCase):
     def setUp(self):
