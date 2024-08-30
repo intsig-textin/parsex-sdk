@@ -302,9 +302,10 @@ class ParseXClient:
             result = response.json()
         except Exception as e:
             print(f"{e}", flush=True)
+            exit(0)
             
         if result["code"] != 200:
-            print(f"illegal result", flush=True)
+            print(f"illegal result {result}", flush=True)
             exit(0)
         
         if result["version"] != "3.6.2":
