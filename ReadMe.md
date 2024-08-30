@@ -49,13 +49,11 @@ print(result.all_markdown)
 print("\n")
 
 print("All text in document:")
-self.assertGreater(len(result.all_text), 0, "There should be some text in the document")
 parser_client.print_all_elements(result.all_text, 0, 1000)
 print("\n")
 
 
 print(f"Total tables in document: {len(result.all_tables)}")
-self.assertGreater(len(result.all_tables), 0, "There should be at least one table in the document")
         
 for index, table in enumerate(result.all_tables):
     print(f"Table {index + 1}:")
@@ -63,7 +61,6 @@ for index, table in enumerate(result.all_tables):
     print("\n")
 
 print(f"Total paragraphs in document: {len(result.all_paragraphs)}")
-self.assertGreater(len(result.all_paragraphs), 0, "There should be at least one paragraph in the document")
 for p_idx, each_paragraph in enumerate(result.all_paragraphs):
     print(f"\n--- Paragraph {p_idx + 1}/{len(result.all_paragraphs)} ---")
     print(f"Paragraph position: {each_paragraph.pos}")
@@ -73,7 +70,6 @@ for p_idx, each_paragraph in enumerate(result.all_paragraphs):
         print(f"  Line text: {each_line.text}")
     
 print(f"Total images in document: {len(result.all_images)}")
-self.assertGreater(len(result.all_images), 0, "There should be at least one image in the document")
 for index, image in enumerate(result.all_images):
     print(f"Image {index + 1}:")
     parser_client.print_all_elements(image)
