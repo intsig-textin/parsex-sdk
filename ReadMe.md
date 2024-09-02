@@ -7,7 +7,7 @@ ParseX是一套标准的多平台支持的python sdk，帮助开发者解析pdf_
 pip install TextInParseX
 ```
 
-首先，你要在textin开通文档解析服务，然后可以在工作台->账号设置->开发者信息中获得api_id和secret_code
+首先，你要在textin开通文档解析服务，然后可以在 https://www.textin.com/console/dashboard/setting 获得api_id和secret_code
 你可以通过ParseX直接调用url获取解析对象
 
 ```
