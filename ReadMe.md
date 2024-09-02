@@ -59,52 +59,52 @@ parseX_client.print_all_elements(result.all_text, 0, 1000)
 print("\n")
 print(f"Total tables in document: {len(result.all_tables)}")
 for index, table in enumerate(result.all_tables):
-    print(f"Table {index + 1}:")
+    print(f"Table {index }:")
     parseX_client.print_all_elements(table)
     print("\n")
     
 print(f"Total paragraphs in document: {len(result.all_paragraphs)}")
 for p_idx, each_paragraph in enumerate(result.all_paragraphs):
-    print(f"\n--- Paragraph {p_idx + 1}/{len(result.all_paragraphs)} ---")
+    print(f"\n--- Paragraph {p_idx }/{len(result.all_paragraphs)} ---")
     print(f"Paragraph position: {each_paragraph.pos}")
     for l_idx, each_line in enumerate(each_paragraph.lines):
-        print(f"  Line {l_idx + 1}/{len(each_paragraph.lines)}")
+        print(f"  Line {l_idx }/{len(each_paragraph.lines)}")
         print(f"    Line positions: {each_line.pos}")
         print(f"  Line text: {each_line.text}")
     
 print(f"Total images in document: {len(result.all_images)}")
 for index, image in enumerate(result.all_images):
-    print(f"Image {index + 1}:")
+    print(f"Image {index}:")
     parseX_client.print_all_elements(image)
     print("\n")
 
 all_images_cv_mat = result.get_all_images_cv_mat()
 print(f"Total images (as cv::Mat) in document: {len(all_images_cv_mat)}")
 for idx, mat in enumerate(all_images_cv_mat):
-    print(f"Image {idx + 1} (cv::Mat) shape: {mat.shape}")
+    print(f"Image {idx } (cv::Mat) shape: {mat.shape}")
 ```
 
 分别获取每页的表格信息、图片信息，段落纯文本信息，段落坐标，每行的信息
 
 ```
 for page in result.pages:
-    print(f"=== Page {page.page_id + 1} ===")
+    print(f"=== Page {page.page_id } ===")
     print("\n")
     
     for index, table in enumerate(page.tables):
-        print(f"Table {index + 1}:")
+        print(f"Table {index }:")
         parseX_client.print_all_elements(table)
         print("\n")
 
     for index, image in enumerate(page.images):
-        print(f"Image {index + 1}:")
+        print(f"Image {index }:")
         parseX_client.print_all_elements(image)  # 限定只能打印前50(默认)个字符
         print("\n")
     
     images_cv_mat = page.get_images_cv_mat()
-    print(f"Total images (as cv::Mat) in page {page.page_id + 1}: {len(images_cv_mat)}")
+    print(f"Total images (as cv::Mat) in page {page.page_id }: {len(images_cv_mat)}")
     for idx, mat in enumerate(images_cv_mat):
-        print(f"Image {idx + 1} (cv::Mat) shape: {mat.shape}")
+        print(f"Image {idx } (cv::Mat) shape: {mat.shape}")
     print("\n")
    
     print("Text:")
@@ -114,10 +114,10 @@ for page in result.pages:
     
     print(f"Total paragraphs: {len(page.paragraphs)}")
     for p_idx, each_paragraph in enumerate(page.paragraphs):
-        print(f"\n--- Paragraph {p_idx + 1}/{len(page.paragraphs)} ---")
+        print(f"\n--- Paragraph {p_idx }/{len(page.paragraphs)} ---")
         print(f"Paragraph position: {each_paragraph.pos}")
         for l_idx, each_line in enumerate(each_paragraph.lines):
-            print(f"  Line {l_idx + 1}/{len(each_paragraph.lines)}")
+            print(f"  Line {l_idx }/{len(each_paragraph.lines)}")
             print(f"    Line positions: {each_line.pos}")
             print(f"  Line text: {each_line.text}")
     print('Finished getting paragraphs')
