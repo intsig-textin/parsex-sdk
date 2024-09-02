@@ -2,12 +2,12 @@ from setuptools import setup, find_packages
 
 setup(
     name='TextInParseX',
-    version='0.0.4',
+    version='1.0.0',
     author='bin_zhang',
     description='A text-in parser engine for pdf to markdown processing',
-    long_description=open('README.md').read(),
+    long_description=open('../README.md').read(),
     long_description_content_type='text/markdown',
-    url='https://github.com/intsig/x2md_tools/python/ParseGenius_engine',
+    url='https://github.com/intsig-textin/parsex-sdk',
     packages=find_packages(),
     install_requires=[
         'opencv-python-headless',
