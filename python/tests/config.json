@@ -1,3 +1,8 @@
 {
-  "use_local_source": false
+  "use_local_source": false,
+  "api_url": "https://api.textin.com/ai/service/v1/pdf_to_markdown?markdown_details=1&apply_document_tree=1",
+  "download_image_url": "https://api.textin.com/ocr_image/download?",
+  "draw_pos":true,
+  "app_id":"###########################",
+  "secret_code":"#################"
 }
