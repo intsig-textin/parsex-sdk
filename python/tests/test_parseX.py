@@ -25,15 +25,14 @@ class TestPdf2MdParserEngine(unittest.TestCase):
 
     def test_parseX(self):
         # 如果你已经有调用文档解析的结果，可以不需要执行get_result_via_curl， 直接指定result_json_path的路径进行解析
-        app_id = config.get('app_id')
-        secret_code = config.get('secret_code')
+        app_id = config.get('app_id', '":"###########################"')
+        secret_code = config.get('secret_code', "###########################")
         api_url = config.get('api_url')
         download_image_url = config.get('download_image_url')
         draw_pos = config.get('draw_pos')
 
         pdf_file_path = "file/example.pdf"
         
-
         # 初始化解析器
         parseX_client = px.ParseXClient(app_id, secret_code)
         result = parseX_client.begin_analyze_document_from_url(pdf_file_path)
