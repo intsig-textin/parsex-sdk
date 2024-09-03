@@ -197,6 +197,7 @@ class Page:
     def paragraph_text(self) -> str:
         return ''.join(item.text for item in self.content if isinstance(item, ContentTextLine))
 
+
 class Metrics:
     def __init__(self, document_type: str, valid_page_number: int, paragraph_number: int, character_number: int):
         self.document_type = document_type
@@ -279,6 +280,31 @@ class ParseXClient:
             )
         )    
     
+    def download_image_from_url(self, download_url, image_id):
+        headers = { 'x-ti-app-id': self.app_id,
+                    'x-ti-secret-code': self.secret_code}
+        full_url = download_url + 'image_id={}'.format(image_id)
+
+        try:
+            response = requests.post(full_url, headers=headers, timeout=10)
+        except ConnectionError as e:
+            print(f"{e}-{full_url}", flush=True)
+        except Exception as e:
+            print(f"{e}-{full_url}", flush=True)
+        try:
+            result = response.json()
+        except Exception as e:
+            print(f"{e}", flush=True)
+        
+        if result["code"] != 200:
+            print(f"code result error {result}", flush=True)
+        
+        image_data = ImageData(result["data"]["image"])
+        img = image_data.to_cv_mat()
+
+        return img
+            
+
     def begin_analyze_document_from_url(self, file_path,
                                         api_url = "https://api.textin.com/ai/service/v1/pdf_to_markdown?markdown_details=1&apply_document_tree=1&page_details=1", 
                                         ):
@@ -305,7 +331,7 @@ class ParseXClient:
             exit(0)
             
         if result["code"] != 200:
-            print(f"illegal result {result}", flush=True)
+            print(f"code result error {result}", flush=True)
             exit(0)
         
         if "3.6" not in result["version"]:
