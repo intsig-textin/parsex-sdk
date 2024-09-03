@@ -308,8 +308,8 @@ class ParseXClient:
             print(f"illegal result {result}", flush=True)
             exit(0)
         
-        if result["version"] != "3.6.7":
-            print(f"illegal api version {result['version']}")
+        if "3.6" not in result["version"]:
+            print(f"wrong api version {result['version']}, should be greadter than 3.6")
             exit(0)
         
         self.result = result
