@@ -91,7 +91,7 @@ class TestPdf2MdParserEngine(unittest.TestCase):
         for page in result.pages:
             print(f"=== Page {page.page_id} === Page width {page.width} Page height {page.height}")
             print("\n")
-
+            print (f"Page Markdown\n: {page.markdown}")
             for index, table in enumerate(page.tables):
                 print(f"Table {index}:")
                 cells = table.cells
@@ -130,6 +130,8 @@ class TestPdf2MdParserEngine(unittest.TestCase):
         if draw_pos == True and download_image_url is not None:
             for page in result.pages:
                 page_img = parseX_client.download_image_from_url(download_image_url, page.image_id)
+                if page_img is None:
+                    continue
                 for index, table in enumerate(page.tables):
                     cells = table.cells
                     for each_cell in cells:

@@ -96,7 +96,7 @@ class ContentTextLine:
         self.char_cand_score = char_cand_score or []
 
 class Page:
-    def __init__(self, status: str, page_id: int, durations: float, image_id: Optional[str] = None, width: Optional[int] = None, height: Optional[int] = None, angle: Optional[int] = 0, num: Optional[int] = 0, image: Optional[ImageData] = None, content: Optional[List[Union[ContentTextLine, ContentImage]]] = None, structured: Optional[List[Union[Table]]] = None, structured_para: Optional[List[Union[Paragraph]]] = None):
+    def __init__(self, status: str, page_id: int, durations: float, image_id: Optional[str] = None, width: Optional[int] = None, height: Optional[int] = None, angle: Optional[int] = 0, num: Optional[int] = 0, image: Optional[ImageData] = None, content: Optional[List[Union[ContentTextLine, ContentImage]]] = None, structured: Optional[List[Union[Table]]] = None, structured_para: Optional[List[Union[Paragraph]]] = None, markdown_details = None):
         self.status = status
         self.page_id = page_id
         self.durations = durations
@@ -109,6 +109,22 @@ class Page:
         self.content = content or []
         self.structured = structured or []
         self.structured_para = structured_para or []
+        self.markdown_details = markdown_details
+
+    @property
+    def markdown(self):
+        result = ''
+        for s in self.markdown_details:
+            para_str = ''
+            for index in range(0, s["outline_level"]+1):
+                para_str += '#'
+            if len(para_str) > 0:
+                para_str += ' '
+            para_str += s["text"]
+            if len(para_str) > 0:
+                para_str += '\n\n'
+            result += para_str
+        return result
 
     @property
     def tables(self) -> List[Table]:
@@ -291,19 +307,29 @@ class ParseXClient:
             print(f"{e}-{full_url}", flush=True)
         except Exception as e:
             print(f"{e}-{full_url}", flush=True)
+            return None
         try:
             result = response.json()
         except Exception as e:
             print(f"{e}", flush=True)
-        
+            return None
+
         if result["code"] != 200:
             print(f"code result error {result}", flush=True)
+            return None
         
         image_data = ImageData(result["data"]["image"])
         img = image_data.to_cv_mat()
 
         return img
             
+
+    def check_version(self, version):
+        api_versions = version.split('.')
+        if len(api_versions) != 3 or int(api_versions[0]) < 3 or int(api_versions[1]) < 6 or int(api_versions[2]) < 7:
+            print(f"wrong api version {version}, should be equal or greadter than 3.6.6")
+            exit(0)
+
 
     def begin_analyze_document_from_url(self, file_path,
                                         api_url = "https://api.textin.com/ai/service/v1/pdf_to_markdown?markdown_details=1&apply_document_tree=1&page_details=1", 
@@ -334,15 +360,14 @@ class ParseXClient:
             print(f"code result error {result}", flush=True)
             exit(0)
         
-        if "3.6" not in result["version"]:
-            print(f"wrong api version {result['version']}, should be greadter than 3.6")
-            exit(0)
+        self.check_version(result["version"])
         
         self.result = result
         self.pri_document = parse_x_to_markdown_output(self.result)
         return self.pri_document
     
     def begin_analyze_document_from_json(self, json_object):
+        self.check_version(json_object["version"])
         self.pri_document = parse_x_to_markdown_output(json_object)
         return self.pri_document
 
@@ -354,6 +379,7 @@ class ParseXClient:
             except json.JSONDecodeError as e:
                 print(f"JSON 解析错误: {e}")
                 return -1
+        self.check_version(data["version"])
         print('start to prase_x_to_markdown_output')
         self.pri_document = parse_x_to_markdown_output(data)
         self.page_num = len(self.pri_document.pages)
@@ -427,7 +453,8 @@ def parse_x_to_markdown_output(data: dict) -> Document:
                 for s in page.get('structured', [])
                 if s.get('type') == 'table'
             ],
-            structured_para=[s for s in page.get('structured', []) if s.get('type') == 'textblock']
+            structured_para=[s for s in page.get('structured', []) if s.get('type') == 'textblock'],
+            markdown_details = [md for md in details_data if md["page_id"] == page.get('page_id', 0)]
         )
         for page in result_data.get('pages', [])
     ]
