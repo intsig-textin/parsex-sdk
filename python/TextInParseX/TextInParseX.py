@@ -324,6 +324,13 @@ class ParseXClient:
         return img
             
 
+    def check_version(self, version):
+        api_versions = version.split('.')
+        if len(api_versions) != 3 or int(api_versions[0]) < 3 or int(api_versions[1]) < 6 or int(api_versions[2]) < 7:
+            print(f"wrong api version {version}, should be equal or greadter than 3.6.6")
+            exit(0)
+
+
     def begin_analyze_document_from_url(self, file_path,
                                         api_url = "https://api.textin.com/ai/service/v1/pdf_to_markdown?markdown_details=1&apply_document_tree=1&page_details=1", 
                                         ):
@@ -353,15 +360,14 @@ class ParseXClient:
             print(f"code result error {result}", flush=True)
             exit(0)
         
-        api_versions = result["version"].split('.')
-        if len(api_versions) != 3 or int(api_versions[0]) < 3 or int(api_versions[1]) < 6 or int(api_versions[2]) < 7:
-            print(f"wrong api version {result['version']}, should be greadter than 3.6.7")
-
+        self.check_version(result["version"])
+        
         self.result = result
         self.pri_document = parse_x_to_markdown_output(self.result)
         return self.pri_document
     
     def begin_analyze_document_from_json(self, json_object):
+        self.check_version(json_object["version"])
         self.pri_document = parse_x_to_markdown_output(json_object)
         return self.pri_document
 
@@ -373,6 +379,7 @@ class ParseXClient:
             except json.JSONDecodeError as e:
                 print(f"JSON 解析错误: {e}")
                 return -1
+        self.check_version(data["version"])
         print('start to prase_x_to_markdown_output')
         self.pri_document = parse_x_to_markdown_output(data)
         self.page_num = len(self.pri_document.pages)
