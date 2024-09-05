@@ -123,3 +123,22 @@ for page in result.pages:
     print('Finished getting paragraphs')
     print("\n\n")
 ```
+
+```
+    for page in result.pages:
+        page_img = parseX_client.download_image_from_url(download_image_url, page.image_id)
+        for index, table in enumerate(page.tables):
+            cells = table.cells
+            for each_cell in cells:
+                cv2.rectangle(page_img, (each_cell.pos[0], each_cell.pos[1]), (each_cell.pos[4], each_cell.pos[5]), (0, 0, 255), 1)
+            
+            for index, image in enumerate(page.images):
+                cv2.rectangle(page_img, (image.pos[0], image.pos[1]), (image.pos[4], image.pos[5]), (0, 255, 255), 1)
+
+            for p_idx, each_paragraph in enumerate(page.paragraphs):
+                cv2.rectangle(page_img, (each_paragraph.pos[0], each_paragraph.pos[1]), (each_paragraph.pos[4], each_paragraph.pos[5]), (0, 255, 0), 5)
+                for l_idx, each_line in enumerate(each_paragraph.lines):
+                    cv2.rectangle(page_img, (each_line.pos[0], each_line.pos[1]), (each_line.pos[4], each_line.pos[5]), (255, 0, 0), 1)
+
+        cv2.imwrite('image_result_{}.jpg'.format(page.page_id), page_img)
+```
