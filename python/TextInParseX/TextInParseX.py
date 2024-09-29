@@ -326,10 +326,24 @@ class ParseXClient:
 
     def check_version(self, version):
         api_versions = version.split('.')
-        if len(api_versions) != 3 or int(api_versions[0]) < 3 or int(api_versions[1]) < 6 or int(api_versions[2]) < 7:
-            print(f"wrong api version {version}, should be equal or greadter than 3.6.6")
-            exit(0)
+        standard_version = [3, 6, 6]
+        flag = True
 
+        if len(api_versions) < 3:
+            flag = False
+        else:
+            for index in range(0, 3):
+                if int(api_versions[index]) < standard_version[index]:
+                    flag = False
+                    break
+                elif int(api_versions[index]) > standard_version[index]:
+                    flag = True
+                    break
+
+        if flag == False:
+            print(f"wrong api version {version}, should be equal or greater than 3.6.6")
+            exit(0)
+        return flag
 
     def begin_analyze_document_from_url(self, file_path,
                                         api_url = "https://api.textin.com/ai/service/v1/pdf_to_markdown?markdown_details=1&apply_document_tree=1&page_details=1", 
