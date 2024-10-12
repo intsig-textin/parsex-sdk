@@ -50,8 +50,11 @@ public class TextInParseXExample {
         // 指定要分析的 PDF 文件路径
         String pdfFilePath = "/path/to/your/document.pdf";
 
+        // 指定解析的api url，请参考api文档确定参数
+        String apiUrl = "https://api.textin.com/ai/service/v1/pdf_to_markdown?markdown_details=1&apply_document_tree=1&page_details=1&get_image=both";
+
         // 开始分析文档
-        Document result = parseXClient.beginAnalyzeDocumentFromUrl(pdfFilePath);
+        Document result = parseXClient.beginAnalyzeDocumentFromUrl(pdfFilePath, apiUrl);
 
         // ... 后续代码
     }
@@ -139,6 +142,58 @@ for (int i = 0; i < cvImages.size(); i++) {
     parseXClient.printAllElements(cvImages.get(i));
 }
 ```
+
+## 8. 处理和保存带注释的图像
+
+以下示例展示了如何处理文档中的每一页，为表格、图像、段落和文本行添加边界框，并保存结果图像：
+
+```java
+public void processAndSaveImages() {
+    String downloadImageUrl = "https://api.textin.com/ocr_image/download?";
+
+    for (Page page : priDocument.getPages()) {
+        Mat pageImg = downloadImageFromUrl(downloadImageUrl, page.getImageId());
+        if (pageImg == null) continue;
+
+        for (Table table : page.getTables()) {
+            for (TableCell cell : table.getCells()) {
+                Imgproc.rectangle(pageImg, 
+                    new Point(cell.getPos().get(0), cell.getPos().get(1)),
+                    new Point(cell.getPos().get(4), cell.getPos().get(5)),
+                    new Scalar(0, 0, 255), 1);
+            }
+        }
+
+        for (ContentImage image : page.getImages()) {
+            Imgproc.rectangle(pageImg,
+                new Point(image.getPos().get(0), image.getPos().get(1)),
+                new Point(image.getPos().get(4), image.getPos().get(5)),
+                new Scalar(0, 255, 255), 1);
+        }
+
+        for (Paragraph paragraph : page.getParagraphs()) {
+            Imgproc.rectangle(pageImg,
+                new Point(paragraph.getPos().get(0), paragraph.getPos().get(1)),
+                new Point(paragraph.getPos().get(4), paragraph.getPos().get(5)),
+                new Scalar(0, 255, 0), 5);
+
+            for (Object line : paragraph.getLines()) {
+                if (line instanceof ContentTextLine) {
+                    ContentTextLine textLine = (ContentTextLine) line;
+                    Imgproc.rectangle(pageImg,
+                        new Point(textLine.getPos().get(0), textLine.getPos().get(1)),
+                        new Point(textLine.getPos().get(4), textLine.getPos().get(5)),
+                        new Scalar(255, 0, 0), 1);
+                }
+            }
+        }
+
+        Imgcodecs.imwrite("image_result_" + page.getPageId() + ".jpg", pageImg);
+    }
+}
+```
+
+这个方法会为每个页面下载图像，然后在图像上绘制矩形来标注表格单元格（红色）、图像（黄色）、段落（绿色）和文本行（蓝色）。处理后的图像会以 "image_result_[页码].jpg" 的格式保存。
 
 ## 注意事项
 

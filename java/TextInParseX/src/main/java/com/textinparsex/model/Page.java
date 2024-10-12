@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.opencv.core.Mat;
+import lombok.Data;
 
+@Data
 public class Page {
     private String status;
     private int pageId;
