@@ -6,7 +6,9 @@ ParseX是一套标准的多平台支持的java sdk，帮助开发者解析pdf_to
 
 # 2、SDK使用方法
 1、在release页面下载textinparsex-sdk-1.0.zip包。
+
 2、解压zip包，将textinparsex-sdk-1.0.jar文件添加到项目的 libs 目录中。
+
 3、在项目中引入jar包。
 ```
 # 以下为gradle的配置方式
