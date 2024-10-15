@@ -16,7 +16,7 @@ public class TestSDK {
     public static final String API_SECRET = "********";
     public static final String PDF_FILE_PATH = "/your/path/to/example.pdf";
     public static final String API_URL = "https://api.textin.com/ai/service/v1/pdf_to_markdown?markdown_details=1&apply_document_tree=1&page_details=1&get_image=both";
-    public static final String DOWNLOAD_IMAGE_URL = "https://api.textin.com/ai/service/v1/download_image";
+    public static final String DOWNLOAD_IMAGE_URL = "https://api.textin.com/ocr_image/download?";
 
     public static void main(String[] args) throws Exception {
         System.load(OPENCV_PATH);
