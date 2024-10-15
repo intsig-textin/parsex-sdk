@@ -5,28 +5,23 @@
 ParseX是一套标准的多平台支持的java sdk，帮助开发者解析pdf_to_markdownRestful API返回结果，获取对应的版面元素的数据结构。开发者只需下载jar包，并导入到自己的项目中即可使用。
 
 # 2、SDK使用方法
-1、在release页面下载textinparsex-sdk-1.0.zip包。
-
-2、解压zip包，将textinparsex-sdk-1.0.jar文件添加到项目的 libs 目录中。
-
-3、在项目中引入jar包。
+在项目中引入jar包后即可使用。
 ```
 # 以下为gradle的配置方式
-implementation files('libs/textinparsex-sdk-1.0.jar')
+implementation 'io.github.supperai:parse_sdk:1.0'
 
 # 以下为maven的配置方式
 <dependency>
-    <groupId>com.textinparsex</groupId>
-    <artifactId>textinparsex-sdk</artifactId>
+    <groupId>io.github.supperai</groupId>
+    <artifactId>parse_sdk</artifactId>
     <version>1.0</version>
-    <scope>system</scope>
-    <systemPath>${project.basedir}/libs/textinparsex-sdk-1.0.jar</systemPath>
 </dependency>
 ```
 
 # 3、SDK使用示例
 
 本示例展示了如何使用 TextInParseX SDK 来解析 PDF 文件并提取其中的各种元素。
+完整示例代码请见TextInParseX/src/test/TestSDK.java。
 
 ## 1. 初始化
 
@@ -200,10 +195,48 @@ public void processAndSaveImages() {
 使用此示例时，请确保：
 
 1. 替换 `your_app_id_here` 和 `your_secret_code_here` 为您的实际 API ID 和密钥。
-2. 更新 `System.load()` 中的路径，指向正确的 OpenCV 库文件。
+2. 更新 `System.load()` 中的路径，指向正确的 OpenCV 库文件。如果有完整opencv环境，可以使用System.loadLibrary(Core.NATIVE_LIBRARY_NAME)。
 3. 将 `/path/to/your/document.pdf` 替换为要分析的 PDF 文件的实际路径。
 
 这个示例展示了如何使用 TextInParseX SDK 的主要功能，包括提取 Markdown 内容、文本、表格、段落、图片信息等。您可以根据需要修改这个示例，以适应您的具体使用场景。
 
+## 如果没有OpenCV环境
+下载页面 https://github.com/opencv/opencv/releases。
+建议下载版本为4.5.5
 
+### 如果是windows系统，请安装opencv的windows版本。
+下载opencv-455-vc14_vc15.exe，并安装。
 
+安装完成后，找到opencv_java455.dll，System.load()中填入该文件的路径。
+
+如果配置了完整的opencv环境，可以使用System.loadLibrary("opencv_java455")。
+
+### 如果是linux系统，请下载source包并编译。
+1. 下载并解压source包。
+
+2. 确认是否安装了ant，通过ant -version确认。如果未安装，先执行 apt-get install ant 进行安装。
+
+3. 进入解压后的目录，执行以下命令：
+```
+mkdir build
+cd build
+cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local -D BUILD_TESTS=OFF -D BUILD_SHARED_LIBS=OFF -D BUILD_JAVA=ON ..
+make -j8
+```
+cmake这一步需要确认配置是否正确，如果java下的ant不能为空，Java wrapper需要为YES。
+<img src="image.png" alt="OpenCV configuration" width="80%" />
+
+如果确认已经安装了ant，但cmake时仍然报错，请尝试以下命令：
+```
+ll /usr/bin/ant
+# 如果显示为空或链接到相对路径，则执行以下命令：
+sudo ln -s /usr/share/ant/bin/ant /usr/bin/ant
+```
+然后重新执行cmake命令。
+
+4. 编译完成后，将生成的build/lib/opencv_java455.so文件复制到项目中，并在System.load()中填入该文件的路径。
+
+## 如果有OpenCV环境但版本不匹配？
+1. 参考上面安装步骤，重新安装指定版本的opencv。
+
+2. 如果不想重新安装，可以修改gradle或maven中配置的org.openpnp的opencv版本以适配当前环境的opencv版本。
