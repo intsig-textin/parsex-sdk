@@ -9,9 +9,9 @@ public class ImageBlock {
     private String type;
     private List<Integer> pos;
     private int zorder;
-    private List<Integer> content;
+    private List<Object> content;
 
-    public ImageBlock(String type, List<Integer> pos, int zorder, List<Integer> content) {
+    public ImageBlock(String type, List<Integer> pos, int zorder, List<Object> content) {
         this.type = type;
         this.pos = pos;
         this.zorder = zorder;

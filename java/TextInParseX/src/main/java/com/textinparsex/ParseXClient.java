@@ -2,20 +2,24 @@ package com.textinparsex;
 
 import com.textinparsex.model.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.textinparsex.model.Table;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.opencv.core.Core;
 import org.opencv.core.Mat;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class ParseXClient {
     private String appId;
@@ -356,7 +360,7 @@ public class ParseXClient {
             return new TextBlock(
                     type,
                     (List<Integer>) contentData.get("pos"),
-                    (List<Integer>) contentData.get("content"),
+                    (List<Object>) contentData.get("content"),
                     (String) contentData.get("sub_type"),
                     (boolean) contentData.getOrDefault("is_continue", false)
             );
@@ -365,7 +369,7 @@ public class ParseXClient {
                     type,
                     (List<Integer>) contentData.get("pos"),
                     (int) contentData.get("zorder"),
-                    (List<Integer>) contentData.get("content")
+                    (List<Object>) contentData.get("content")
             );
         }
         return null;
@@ -393,4 +397,69 @@ public class ParseXClient {
                 (int) metricsData.get("character_number")
         );
     }
+
+    public void saveTablesAsExcel(List<Table> tables, String filePath) throws IOException {
+        try (Workbook workbook = new XSSFWorkbook()) {
+            for (int i = 0; i < tables.size(); i++) {
+                Table table = tables.get(i);
+                Sheet sheet = workbook.createSheet("Table " + (i + 1));
+                
+                for (int rowIndex = 0; rowIndex < table.getRows(); rowIndex++) {
+                    Row row = sheet.createRow(rowIndex);
+                    final int finalRowIndex = rowIndex;
+                    for (int colIndex = 0; colIndex < table.getCols(); colIndex++) {
+                        Cell cell = row.createCell(colIndex);
+                        final int finalColIndex = colIndex;
+                        TableCell tableCell = table.getCells().stream()
+                                .filter(c -> c.getRow() == finalRowIndex && c.getCol() == finalColIndex)
+                                .findFirst()
+                                .orElse(null);
+                        
+                        if (tableCell != null) {
+                            String cellContent = getCellContent(tableCell);
+                            cell.setCellValue(cellContent);
+                        }
+                    }
+                }
+                
+                // Auto-size columns
+                for (int colIndex = 0; colIndex < table.getCols(); colIndex++) {
+                    sheet.autoSizeColumn(colIndex);
+                }
+            }
+            
+            // Write the workbook to a file
+            try (FileOutputStream fileOut = new FileOutputStream(filePath)) {
+                workbook.write(fileOut);
+            }
+        }
+    }
+
+    private String getCellContent(TableCell tableCell) {
+        StringBuilder content = new StringBuilder();
+        for (Object item : tableCell.getContent()) {
+            if (item instanceof TextBlock) {
+                TextBlock textBlock = (TextBlock) item;
+                content.append(textBlock.getContent().stream()
+                        .map(this::getContentText)
+                        .collect(Collectors.joining(" ")));
+            } else if (item instanceof ImageBlock) {
+                content.append("[Image]");
+            }
+            content.append(" ");
+        }
+        return content.toString().trim();
+    }
+
+    private String getContentText(Object contentItem) {
+        if (contentItem instanceof ContentTextLine) {
+            return ((ContentTextLine) contentItem).getText();
+        } else if (contentItem instanceof ContentImage) {
+            return "[Image]";
+        } else {
+            return contentItem.toString();
+        }
+    }
+
+    
 }

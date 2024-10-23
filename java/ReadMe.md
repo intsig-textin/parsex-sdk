@@ -190,6 +190,15 @@ public void processAndSaveImages() {
 
 这个方法会为每个页面下载图像，然后在图像上绘制矩形来标注表格单元格（红色）、图像（黄色）、段落（绿色）和文本行（蓝色）。处理后的图像会以 "image_result_[页码].jpg" 的格式保存。
 
+## 9. 处理表格并保存为Excel
+
+```java
+List<Table> tableList = result.getAllTables();
+parseXClient.saveTablesAsExcel(tableList, "/your/path/to/example.xlsx");
+```
+这个方法会将表格转换为excel文件，并保存到指定路径。如果有多个表格，会生成多个sheet。
+
+
 ## 注意事项
 
 使用此示例时，请确保：
