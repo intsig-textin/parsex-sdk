@@ -8,11 +8,11 @@ import java.util.List;
 public class TextBlock {
     private String type;
     private List<Integer> pos;
-    private List<Integer> content;
+    private List<Object> content;
     private String subType;
     private boolean isContinue;
 
-    public TextBlock(String type, List<Integer> pos, List<Integer> content, String subType, boolean isContinue) {
+    public TextBlock(String type, List<Integer> pos, List<Object> content, String subType, boolean isContinue) {
         this.type = type;
         this.pos = pos;
         this.content = content;

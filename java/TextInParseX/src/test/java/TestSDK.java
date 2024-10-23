@@ -109,6 +109,10 @@ public class TestSDK {
             Imgcodecs.imwrite("image_result_" + page.getPageId() + ".jpg", pageImg);
         }
 
+        // convert to execl
+        List<Table> tableList = result.getAllTables();
+        parseXClient.saveTablesAsExcel(tableList, "/your/path/to/example.xlsx");
+
     }
 
 }

@@ -137,3 +137,8 @@ for page in result.pages:
 
         cv2.imwrite('image_result_{}.jpg'.format(page.page_id), page_img)
 ```
+
+将table转成excel表格
+```
+parseX_client.save_tables_as_excel(result.all_tables, 'tables_result.xlsx')
+``` 

@@ -5,6 +5,7 @@ import json
 import requests
 from typing import List, Union, Optional
 from pathlib import Path
+from openpyxl import Workbook
 
 # 定义用于表示 OpenAPI 架构组件的数据类
 class TextBlock:
@@ -436,6 +437,53 @@ class ParseXClient:
             else:
                 print(f'{indent_space}{format_value(obj)}')
 
+    def save_tables_as_excel(self, tables, file_path):
+        workbook = Workbook()
+        workbook.remove(workbook.active)  # 删除默认创建的工作表
+
+        for i, table in enumerate(tables):
+            sheet = workbook.create_sheet(title=f"Table {i + 1}")
+            
+            for row_index in range(table.rows):
+                for col_index in range(table.cols):
+                    cell = next((c for c in table.cells if c.row == row_index and c.col == col_index), None)
+                    
+                    if cell:
+                        content = self.get_cell_content(cell)
+                        sheet.cell(row=row_index + 1, column=col_index + 1, value=content)
+
+            # 自动调整列宽
+            for col in sheet.columns:
+                max_length = 0
+                column = col[0].column_letter
+                for cell in col:
+                    try:
+                        if len(str(cell.value)) > max_length:
+                            max_length = len(cell.value)
+                    except:
+                        pass
+                adjusted_width = (max_length + 2) * 1.2
+                sheet.column_dimensions[column].width = adjusted_width
+
+        workbook.save(file_path)
+
+    def get_cell_content(self, table_cell):
+        content = []
+        for item in table_cell.content:
+            if isinstance(item, TextBlock):
+                text = ' '.join(self.get_content_text(c) for c in item.content)
+                content.append(text)
+            elif isinstance(item, ImageBlock):
+                content.append('[Image]')
+        return ' '.join(content)
+
+    def get_content_text(self, content_item):
+        if isinstance(content_item, ContentTextLine):
+            return content_item.text
+        elif isinstance(content_item, ContentImage):
+            return '[Image]'
+        else:
+            return str(content_item)
 
 # 辅助函数用于解析 JSON 数据
 def parse_x_to_markdown_output(data: dict) -> Document:
@@ -509,3 +557,4 @@ def parse_code_and_message(data: dict) -> CodeAndMessage:
         code=data.get('code', 200),
         message=data.get('message', 'success')
     )
+

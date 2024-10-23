@@ -147,6 +147,8 @@ class TestPdf2MdParserEngine(unittest.TestCase):
 
                 cv2.imwrite('image_result_{}.jpg'.format(page.page_id), page_img)
             
+        # 保存表格为excel
+        parseX_client.save_tables_as_excel(result.all_tables, 'tables_result.xlsx')
 
 if __name__ == '__main__':
     unittest.main()

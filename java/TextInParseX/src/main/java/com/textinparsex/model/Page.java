@@ -74,14 +74,14 @@ public class Page {
                                         .map(item -> {
                                             if (item instanceof TextBlock) {
                                                 TextBlock textBlock = (TextBlock) item;
-                                                List<Integer> resolvedContent = textBlock.getContent().stream()
-                                                        .map(Integer.class::cast)
+                                                List<Object> resolvedContent = textBlock.getContent().stream()
+                                                        .map(id -> contentMap.get((Integer) id))
                                                         .collect(Collectors.toList());
                                                 return new TextBlock(textBlock.getType(), textBlock.getPos(), resolvedContent, textBlock.getSubType(), textBlock.isContinue());
                                             } else if (item instanceof ImageBlock) {
                                                 ImageBlock imageBlock = (ImageBlock) item;
-                                                List<Integer> resolvedContent = imageBlock.getContent().stream()
-                                                        .map(Integer.class::cast)
+                                                List<Object> resolvedContent = imageBlock.getContent().stream()
+                                                        .map(id -> contentMap.get((Integer) id))
                                                         .collect(Collectors.toList());
                                                 return new ImageBlock(imageBlock.getType(), imageBlock.getPos(), imageBlock.getZorder(), resolvedContent);
                                             }
