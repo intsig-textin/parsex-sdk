@@ -12,7 +12,8 @@ setup(
     install_requires=[
         'opencv-python-headless',
         'numpy',
-        'requests'
+        'requests',
+        'openpyxl'
     ],
     classifiers=[
         'Programming Language :: Python :: 3',
