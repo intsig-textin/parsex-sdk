@@ -350,6 +350,12 @@ class ParseXClient:
                                         api_url = "https://api.textin.com/ai/service/v1/pdf_to_markdown?markdown_details=1&apply_document_tree=1&page_details=1", 
                                         ):
         # curl 命令的各项参数
+        param_to_add = "from_sdk=python"
+        if "?" in api_url:
+            api_url = f"{api_url}&{param_to_add}" if not api_url.endswith("&") else f"{api_url}{param_to_add}"
+        else:
+            api_url = f"{api_url}?{param_to_add}"
+
         headers = { 'x-ti-app-id': self.app_id,
                     'x-ti-secret-code': self.secret_code
                   }

@@ -101,6 +101,13 @@ public class ParseXClient {
 
     public Document beginAnalyzeDocumentFromUrl(String filePath, String apiUrl) throws IOException {
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            String paramToAdd = "from_sdk=java";
+            if (apiUrl.contains("?")) {
+                apiUrl = apiUrl.endsWith("&") ? apiUrl + paramToAdd : apiUrl + "&" + paramToAdd;
+            } else {
+                apiUrl += "?" + paramToAdd;
+            }
+
             HttpPost httpPost = new HttpPost(apiUrl);
             httpPost.setHeader("x-ti-app-id", appId);
             httpPost.setHeader("x-ti-secret-code", secretCode);
