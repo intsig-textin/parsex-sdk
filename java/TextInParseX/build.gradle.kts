@@ -3,15 +3,16 @@ gradle.startParameter.isOffline = false
 plugins {
     id("java")
     id("maven-publish")
+    id("signing")
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    withSourcesJar()
+    withJavadocJar()
 }
 
-group = "com.textinparsex"
-version = "1.0"
+group = "io.github.supperai"
+version = "1.0.3"
 
 repositories {
     maven { 
@@ -26,7 +27,6 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-databind:2.15.3")
     implementation("org.projectlombok:lombok:1.18.20")
     annotationProcessor("org.projectlombok:lombok:1.18.20")
-    implementation("org.apache.logging.log4j:log4j-core:2.20.0")
     implementation("org.openpnp:opencv:4.5.5-1")
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
@@ -38,30 +38,77 @@ tasks.test {
     useJUnitPlatform()
 }
 
-// 配置 JAR 任务
-tasks.jar {
-    archiveBaseName.set("textinparsex-sdk")
-    archiveVersion.set("1.0")
-    
-    manifest {
-        attributes(mapOf(
-            "Implementation-Title" to project.name,
-            "Implementation-Version" to project.version
-        ))
-    }
-    // 如果您有源代码，可以将其包含在 JAR 中
-    from(sourceSets.main.get().allSource)
+tasks.javadoc {
+    executable = "/usr/bin/javadoc"
+    options.encoding = "UTF-8"
+    (options as StandardJavadocDocletOptions).addStringOption("Xdoclint:none", "-quiet")
 }
 
 // 配置发布
 publishing {
     publications {
-        create<MavenPublication>("sdk") {
-            groupId = "com.textinparsex"
-            artifactId = "textinparsex-sdk"
-            version = "1.0"
-            
+        create<MavenPublication>("mavenJava") {
+            artifactId = "parse_sdk"
             from(components["java"])
+            
+            // Remove these lines as they are redundant
+            // artifact(tasks.jar)
+            // artifact(tasks["sourcesJar"])
+            // artifact(tasks["javadocJar"])
+            
+            pom {
+                name.set("TextInParseX SDK")
+                description.set("A SDK for TextInParseX")
+                url.set("https://github.com/supperai/parsex-sdk")
+                licenses {
+                    license {
+                        name.set("The Apache License, Version 2.0")
+                        url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                    }
+                }
+                developers {
+                    developer {
+                        id.set("supperai")
+                        name.set("supperai")
+                        email.set("xxx@xxx.com")
+                    }
+                }
+                scm {
+                    connection.set("scm:git:git://github.com/supperai/parsex-sdk.git")
+                    developerConnection.set("scm:git:ssh://github.com/supperai/parsex-sdk.git")
+                    url.set("https://github.com/supperai/parsex-sdk")
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = "myRepo"
+            url = uri("${layout.buildDirectory.get().asFile}/repo")
         }
     }
 }
+
+signing {
+    sign(publishing.publications["mavenJava"])
+}
+
+tasks.register("generateChecksums") {
+    dependsOn("jar", "sourcesJar", "javadocJar")
+    doLast {
+        fileTree(layout.buildDirectory.dir("libs")).matching {
+            include("*.jar")
+        }.forEach { file ->
+            ant.withGroovyBuilder {
+                "checksum"("file" to file, "algorithm" to "MD5", "fileext" to ".md5")
+                "checksum"("file" to file, "algorithm" to "SHA1", "fileext" to ".sha1")
+            }
+        }
+    }
+}
+
+tasks.register<Zip>("bundleForUpload") {
+    dependsOn("publish", "generateChecksums")
+}
+
+
