@@ -230,9 +230,9 @@ public class ParseXClient {
     }
 
     private List<Page> parsePages(Map<String, Object> resultData) {
-        List<Map<String, Object>> pagesData = (List<Map<String, Object>>) resultData.get("pages");
-        List<Map<String, Object>> detailsData = (List<Map<String, Object>>) resultData.get("detail");
-        String markdown = (String) resultData.get("markdown");
+        List<Map<String, Object>> pagesData = (List<Map<String, Object>>) resultData.getOrDefault("pages", new ArrayList<>());
+        List<Map<String, Object>> detailsData = (List<Map<String, Object>>) resultData.getOrDefault("detail", new ArrayList<>());
+        String markdown = (String) resultData.getOrDefault("markdown", "");
 
         List<Page> pages = new ArrayList<>();
 
