@@ -7,12 +7,15 @@ plugins {
 }
 
 java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+
     withSourcesJar()
     withJavadocJar()
 }
 
 group = "io.github.supperai"
-version = "1.0.4"
+version = "1.0.5"
 
 repositories {
     maven { 
