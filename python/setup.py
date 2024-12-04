@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='TextInParseX',
-    version='1.0.1',
+    version='1.0.7',
     author='bin_zhang',
     description='A text-in parser engine for pdf to markdown processing',
     long_description=open('../README.md').read(),
