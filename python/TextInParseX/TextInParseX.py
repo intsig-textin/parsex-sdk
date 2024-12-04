@@ -9,7 +9,7 @@ from openpyxl import Workbook
 
 # 定义用于表示 OpenAPI 架构组件的数据类
 class TextBlock:
-    def __init__(self, type: str, pos: List[int], content: List[int], sub_type: Optional[str] = None, is_continue: Optional[bool] = False):
+    def __init__(self, type: str, pos: List[int], content: List[int], sub_type: Optional[str] = None, is_continue: Optional[bool] = False, **kwargs):
         self.type = type
         self.pos = pos
         self.content = content
@@ -17,14 +17,14 @@ class TextBlock:
         self.is_continue = is_continue
 
 class ImageBlock:
-    def __init__(self, type: str, pos: List[int], zorder: int, content: List[int]):
+    def __init__(self, type: str, pos: List[int], zorder: int, content: List[int], **kwargs):
         self.type = type
         self.pos = pos
         self.zorder = zorder
         self.content = content
 
 class TableCell:
-    def __init__(self, row: int, col: int, pos: List[int], content: List[Union[TextBlock, ImageBlock]], row_span: Optional[int] = 1, col_span: Optional[int] = 1):
+    def __init__(self, row: int, col: int, pos: List[int], content: List[Union[TextBlock, ImageBlock]], row_span: Optional[int] = 1, col_span: Optional[int] = 1, **kwargs):
         self.row = row
         self.col = col
         self.pos = pos
@@ -36,7 +36,7 @@ class Table:
     def __init__(self, type: str, pos: List[int], rows: int, cols: int,
                  columns_width: List[int], rows_height: List[int],
                  cells: List[TableCell], sub_type: Optional[str] = 'bordered',
-                 is_continue: Optional[bool] = False, parse_type=None):
+                 is_continue: Optional[bool] = False, parse_type=None, **kwargs):
         self.type = type
         self.pos = pos
         self.rows = rows
@@ -50,12 +50,12 @@ class Table:
 
 
 class Paragraph:
-    def __init__(self, pos, content):
+    def __init__(self, pos, content, **kwargs):
         self.pos = pos
         self.lines = content
 
 class ImageData:
-    def __init__(self, base64: Optional[str] = None, region: Optional[List[int]] = None, path: Optional[str] = None):
+    def __init__(self, base64: Optional[str] = None, region: Optional[List[int]] = None, path: Optional[str] = None, **kwargs):
         self.base64 = base64
         self.region = region
         self.path = path
@@ -71,7 +71,7 @@ class ImageData:
             raise ValueError("No valid image data found.")
 
 class ContentImage:
-    def __init__(self, id: int, type: str, pos: List[int], data: ImageData, sub_type: Optional[str] = None, stamp_type: Optional[str] = None, stamp_shape: Optional[str] = None, stamp_color: Optional[str] = None, size: Optional[List[int]] = None):
+    def __init__(self, id: int, type: str, pos: List[int], data: ImageData, sub_type: Optional[str] = None, stamp_type: Optional[str] = None, stamp_shape: Optional[str] = None, stamp_color: Optional[str] = None, size: Optional[List[int]] = None, **kwargs):
         self.id = id
         self.type = type
         self.pos = pos
@@ -83,7 +83,7 @@ class ContentImage:
         self.size = size
 
 class ContentTextLine:
-    def __init__(self, id: int, type: str, text: str, pos: List[int], angle: Optional[int] = 0, sub_type: Optional[str] = None, direction: Optional[int] = 0, score: Optional[float] = None, char_pos: Optional[List[List[int]]] = None, char_cand: Optional[List[List[str]]] = None, char_cand_score: Optional[List[List[float]]] = None):
+    def __init__(self, id: int, type: str, text: str, pos: List[int], angle: Optional[int] = 0, sub_type: Optional[str] = None, direction: Optional[int] = 0, score: Optional[float] = None, char_pos: Optional[List[List[int]]] = None, char_cand: Optional[List[List[str]]] = None, char_cand_score: Optional[List[List[float]]] = None, **kwargs):
         self.id = id
         self.type = type
         self.text = text
@@ -97,7 +97,7 @@ class ContentTextLine:
         self.char_cand_score = char_cand_score or []
 
 class Page:
-    def __init__(self, status: str, page_id: int, durations: float, image_id: Optional[str] = None, width: Optional[int] = None, height: Optional[int] = None, angle: Optional[int] = 0, num: Optional[int] = 0, image: Optional[ImageData] = None, content: Optional[List[Union[ContentTextLine, ContentImage]]] = None, structured: Optional[List[Union[Table]]] = None, structured_para: Optional[List[Union[Paragraph]]] = None, markdown_details = None):
+    def __init__(self, status: str, page_id: int, durations: float, image_id: Optional[str] = None, width: Optional[int] = None, height: Optional[int] = None, angle: Optional[int] = 0, num: Optional[int] = 0, image: Optional[ImageData] = None, content: Optional[List[Union[ContentTextLine, ContentImage]]] = None, structured: Optional[List[Union[Table]]] = None, structured_para: Optional[List[Union[Paragraph]]] = None, markdown_details = None, **kwargs):
         self.status = status
         self.page_id = page_id
         self.durations = durations
