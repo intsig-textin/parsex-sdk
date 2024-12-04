@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.opencv.core.Mat;
 import lombok.Data;
+import java.util.Collections;
 
 @Data
 public class Page {
@@ -46,7 +47,7 @@ public class Page {
         for (Map<String, Object> s : markdownDetails) {
             StringBuilder paraStr = new StringBuilder();
             int outlineLevel = (int) s.get("outline_level");
-            paraStr.append("#".repeat(outlineLevel + 1));
+            paraStr.append(String.join("", Collections.nCopies(outlineLevel + 1, "#")));
             if (paraStr.length() > 0) {
                 paraStr.append(" ");
             }
