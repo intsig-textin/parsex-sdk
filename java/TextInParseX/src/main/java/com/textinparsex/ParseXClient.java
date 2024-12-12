@@ -14,7 +14,7 @@ import org.opencv.core.Mat;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -112,7 +112,7 @@ public class ParseXClient {
             httpPost.setHeader("x-ti-app-id", appId);
             httpPost.setHeader("x-ti-secret-code", secretCode);
 
-            byte[] imageData = Files.readAllBytes(Path.of(filePath));
+            byte[] imageData = Files.readAllBytes(Paths.get(filePath));
             httpPost.setEntity(new ByteArrayEntity(imageData));
 
             try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
@@ -124,7 +124,7 @@ public class ParseXClient {
                     System.exit(0);
                 }
 
-                checkVersion((String) result.get("version"));
+//                checkVersion((String) result.get("version"));
 
                 this.result = result;
                 this.priDocument = parseXToMarkdownOutput(this.result);
@@ -144,7 +144,7 @@ public class ParseXClient {
     }
 
     public Document beginAnalyzeDocumentFromFile(String jsonPath) throws IOException {
-        Map<String, Object> data = objectMapper.readValue(Path.of(jsonPath).toFile(), Map.class);
+        Map<String, Object> data = objectMapper.readValue(Paths.get(jsonPath).toFile(), Map.class);
         checkVersion((String) data.get("version"));
         System.out.println("Start to parse_x_to_markdown_output");
         this.priDocument = parseXToMarkdownOutput(data);
@@ -156,7 +156,7 @@ public class ParseXClient {
     }
 
     public void printAllElements(Object obj, int indent, int maxStrLength) {
-        String indentSpace = "  ".repeat(indent);
+        String indentSpace = String.join("", Collections.nCopies(indent, "  "));
 
         if (obj instanceof List) {
             List<?> list = (List<?>) obj;
