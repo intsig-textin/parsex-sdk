@@ -132,6 +132,15 @@ class TestPdf2MdParserEngine(unittest.TestCase):
                 page_img = parseX_client.download_image_from_url(download_image_url, page.image_id)
                 if page_img is None:
                     continue
+
+                # 获取表格图片
+                for index, table in enumerate(page.tables):
+                    x1, y1 = table.pos[0], table.pos[1]
+                    x2, y2 = table.pos[4], table.pos[5]
+                    table_img = page_img[y1:y2, x1:x2]
+                    cv2.imwrite('page_{}_table_{}.jpg'.format(page.page_id, index), table_img)
+
+                # 在原图中画出表格框
                 for index, table in enumerate(page.tables):
                     cells = table.cells
                     for each_cell in cells:

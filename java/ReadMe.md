@@ -138,7 +138,7 @@ for (int i = 0; i < cvImages.size(); i++) {
 }
 ```
 
-## 8. 处理和保存带注释的图像
+## 8. 处理和保存图像
 
 以下示例展示了如何处理文档中的每一页，为表格、图像、段落和文本行添加边界框，并保存结果图像：
 
@@ -198,6 +198,23 @@ parseXClient.saveTablesAsExcel(tableList, "/your/path/to/example.xlsx");
 ```
 这个方法会将表格转换为excel文件，并保存到指定路径。如果有多个表格，会生成多个sheet。
 
+## 10. 获取表格图片
+
+```java
+for (Page page : result.getPages()) {
+    Mat pageImg = parseXClient.downloadImageFromUrl(DOWNLOAD_IMAGE_URL, page.getImageId());
+    if (pageImg == null) continue;
+
+    for (Table table : page.getTables()) {
+        int x1 = table.getPos().get(0);
+        int y1 = table.getPos().get(1);
+        int x2 = table.getPos().get(4);
+        int y2 = table.getPos().get(5);
+        Mat tableImg = new Mat(pageImg, new Rect(x1, y1, x2 - x1, y2 - y1));
+        Imgcodecs.imwrite("page_" + page.getPageId() + "_table_" + table.getTableId() + ".jpg", tableImg);
+    }
+}
+```
 
 ## 注意事项
 
