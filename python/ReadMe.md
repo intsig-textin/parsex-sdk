@@ -119,6 +119,8 @@ for page in result.pages:
     print("\n\n")
 ```
 
+画出每页的表格、图片、段落、行的框
+
 ```
     for page in result.pages:
         page_img = parseX_client.download_image_from_url(download_image_url, page.image_id)
@@ -136,6 +138,21 @@ for page in result.pages:
                     cv2.rectangle(page_img, (each_line.pos[0], each_line.pos[1]), (each_line.pos[4], each_line.pos[5]), (255, 0, 0), 1)
 
         cv2.imwrite('image_result_{}.jpg'.format(page.page_id), page_img)
+```
+
+获取表格图片
+
+```
+    for page in result.pages:
+        page_img = parseX_client.download_image_from_url(download_image_url, page.image_id)
+        if page_img is None:
+            continue
+
+        for index, table in enumerate(page.tables):
+            x1, y1 = table.pos[0], table.pos[1]
+            x2, y2 = table.pos[4], table.pos[5]
+            table_img = page_img[y1:y2, x1:x2]
+            cv2.imwrite('page_{}_table_{}.jpg'.format(page.page_id, index), table_img)
 ```
 
 将table转成excel表格

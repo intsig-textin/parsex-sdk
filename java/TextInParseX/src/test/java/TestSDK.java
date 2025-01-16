@@ -73,6 +73,20 @@ public class TestSDK {
             Mat pageImg = parseXClient.downloadImageFromUrl(DOWNLOAD_IMAGE_URL, page.getImageId());
             if (pageImg == null) continue;
 
+            // 获取表格图片
+            for (int i = 0; i < page.getTables().size(); i++) {
+                Table table = page.getTables().get(i);
+                int x1 = table.getPos().get(0);
+                int y1 = table.getPos().get(1);
+                int x2 = table.getPos().get(4);
+                int y2 = table.getPos().get(5);
+                
+                Mat tableImg = new Mat(pageImg, 
+                    new org.opencv.core.Rect(x1, y1, x2 - x1, y2 - y1));
+                Imgcodecs.imwrite(String.format("page_%d_table_%d.jpg", 
+                    page.getPageId(), i), tableImg);
+            }
+
             for (Table table : page.getTables()) {
                 for (TableCell cell : table.getCells()) {
                     Imgproc.rectangle(pageImg,
