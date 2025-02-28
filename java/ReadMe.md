@@ -36,7 +36,7 @@ import java.util.List;
 
 public class TextInParseXExample {
     public static void main(String[] args) throws Exception {
-        // 加载 OpenCV 库
+        // 加载 OpenCV 库, 如果不需要在本地渲染图片（7、8小节），可以跳过
         System.load("/path/to/opencv/library.so");
 
         // 初始化 ParseXClient
