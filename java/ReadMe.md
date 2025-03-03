@@ -8,13 +8,13 @@ ParseX是一套标准的多平台支持的java sdk，帮助开发者解析pdf_to
 在项目中引入jar包后即可使用。
 ```
 # 以下为gradle的配置方式
-implementation 'io.github.supperai:parse_sdk:1.0.5'
+implementation 'io.github.supperai:parse_sdk:$sdkVersion'
 
 # 以下为maven的配置方式
 <dependency>
     <groupId>io.github.supperai</groupId>
     <artifactId>parse_sdk</artifactId>
-    <version>1.0.5</version>
+    <version>$sdkVersion</version>
 </dependency>
 ```
 
