@@ -21,12 +21,17 @@ import java.util.stream.Collectors;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ParseXClient {
     private String appId;
     private String secretCode;
     private Document priDocument;
     private Map<String, Object> result;
     private ObjectMapper objectMapper;
+
+    private static final Logger logger = LoggerFactory.getLogger(ParseXClient.class);
 
     private final static String API_URI = "https://api.textin.com/ai/service/v1/pdf_to_markdown?markdown_details=1&apply_document_tree=1&page_details=1";
 
@@ -54,7 +59,7 @@ public class ParseXClient {
                 Map<String, Object> result = objectMapper.readValue(jsonResponse, Map.class);
 
                 if ((int) result.get("code") != 200) {
-                    System.out.println("Code result error " + result);
+                    logger.error("API response error: {}", result);
                     return null;
                 }
 
@@ -64,7 +69,7 @@ public class ParseXClient {
                 return imageData.toCvMat();
             }
         } catch (Exception e) {
-            System.out.println(e + "-" + fullUrl);
+            logger.error("Failed to download image from {}: {}", fullUrl, e.getMessage(), e);
             return null;
         }
     }
@@ -89,8 +94,7 @@ public class ParseXClient {
         }
 
         if (!flag) {
-            System.out.println("Wrong API version " + version + ", should be equal or greater than 3.6.6");
-            System.exit(0);
+            throw new RuntimeException("Wrong API version " + version + ", should be equal or greater than 3.6.6");
         }
         return flag;
     }
@@ -120,21 +124,18 @@ public class ParseXClient {
                 Map<String, Object> result = objectMapper.readValue(jsonResponse, Map.class);
 
                 if ((int) result.get("code") != 200) {
-                    System.out.println("Code result error " + result);
-                    System.exit(0);
+                    throw new RuntimeException("Code result error " + result);
                 }
 
-//                checkVersion((String) result.get("version"));
+               checkVersion((String) result.get("version"));
 
                 this.result = result;
                 this.priDocument = parseXToMarkdownOutput(this.result);
                 return this.priDocument;
             }
         } catch (Exception e) {
-            System.out.println(e + "-" + apiUrl);
-            System.exit(0);
+            throw new RuntimeException("Error occurred while analyzing document: " + e.getMessage(), e);
         }
-        return null;
     }
 
     public Document beginAnalyzeDocumentFromJson(Map<String, Object> jsonObject) {
@@ -146,7 +147,7 @@ public class ParseXClient {
     public Document beginAnalyzeDocumentFromFile(String jsonPath) throws IOException {
         Map<String, Object> data = objectMapper.readValue(Paths.get(jsonPath).toFile(), Map.class);
         checkVersion((String) data.get("version"));
-        System.out.println("Start to parse_x_to_markdown_output");
+        logger.info("Starting document parsing from file: {}", jsonPath);
         this.priDocument = parseXToMarkdownOutput(data);
         return this.priDocument;
     }
@@ -161,30 +162,30 @@ public class ParseXClient {
         if (obj instanceof List) {
             List<?> list = (List<?>) obj;
             if (!list.isEmpty() && list.get(0) instanceof Integer) {
-                System.out.println(indentSpace + list);
+                logger.info("{}{}", indentSpace, list);
             } else {
                 for (int i = 0; i < list.size(); i++) {
-                    System.out.println(indentSpace + "[" + i + "]");
+                    logger.info("{}[{}]", indentSpace, i);
                     printAllElements(list.get(i), indent + 1, maxStrLength);
                 }
             }
         } else if (obj instanceof Map) {
             Map<?, ?> map = (Map<?, ?>) obj;
             for (Map.Entry<?, ?> entry : map.entrySet()) {
-                System.out.print(indentSpace + entry.getKey() + ": ");
                 if (entry.getValue() instanceof List || entry.getValue() instanceof Map) {
                     if (entry.getValue() instanceof List && !((List<?>) entry.getValue()).isEmpty() && ((List<?>) entry.getValue()).get(0) instanceof Integer) {
-                        System.out.println(entry.getValue());
+                        logger.info("{}{}: {}", indentSpace, entry.getKey(), entry.getValue());
                     } else {
-                        System.out.println();
+                        logger.info("{}{}:", indentSpace, entry.getKey());
                         printAllElements(entry.getValue(), indent + 1, maxStrLength);
                     }
                 } else {
-                    System.out.println(formatValue(entry.getValue(), maxStrLength));
+                    logger.info("{}{}: {}", indentSpace, entry.getKey(), 
+                        formatValue(entry.getValue(), maxStrLength));
                 }
             }
         } else {
-            System.out.println(indentSpace + formatValue(obj, maxStrLength));
+            logger.info("{}{}", indentSpace, formatValue(obj, maxStrLength));
         }
     }
 

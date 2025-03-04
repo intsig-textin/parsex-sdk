@@ -1,3 +1,5 @@
+import java.util.Properties
+
 gradle.startParameter.isOffline = false
 
 plugins {
@@ -5,6 +7,15 @@ plugins {
     id("maven-publish")
     id("signing")
 }
+
+// 读取版本文件
+val versionProperties = Properties().apply {
+    rootProject.file("version.properties").inputStream().use { 
+        load(it) 
+    }
+}
+
+val sdkVersion by extra { versionProperties.getProperty("sdkVersion") }
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -15,7 +26,7 @@ java {
 }
 
 group = "io.github.supperai"
-version = "1.0.5"
+version = sdkVersion
 
 repositories {
     maven { 
@@ -35,6 +46,9 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
     implementation("org.apache.poi:poi:5.2.3")
     implementation("org.apache.poi:poi-ooxml:5.2.3")
+    implementation("org.slf4j:slf4j-api:2.0.9")
+    implementation("ch.qos.logback:logback-classic:1.4.14")
+    testImplementation("org.slf4j:slf4j-simple:2.0.9")
 }
 
 tasks.test {
@@ -53,11 +67,6 @@ publishing {
         create<MavenPublication>("mavenJava") {
             artifactId = "parse_sdk"
             from(components["java"])
-            
-            // Remove these lines as they are redundant
-            // artifact(tasks.jar)
-            // artifact(tasks["sourcesJar"])
-            // artifact(tasks["javadocJar"])
             
             pom {
                 name.set("TextInParseX SDK")
@@ -112,6 +121,14 @@ tasks.register("generateChecksums") {
 
 tasks.register<Zip>("bundleForUpload") {
     dependsOn("publish", "generateChecksums")
+}
+
+tasks.processResources {
+    filesMatching("../ReadMe.md") {
+        expand(
+            "sdkVersion" to sdkVersion
+        )
+    }
 }
 
 
